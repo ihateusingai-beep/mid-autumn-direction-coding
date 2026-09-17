@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>中秋方向編程 · 前與後</title>
+  <style>
+    :root {
+      --bg1: #0b1026;
+      --bg2: #1a1440;
+      --card: #1e2a5a;
+      --ink: #fff8e7;
+      --muted: #c9b8ff;
+      --accent: #ffd76a;
+      --ok: #3ddc97;
+      --bad: #ff6b6b;
+      --btn: #5b7cfa;
+      --btn2: #ff8fab;
+      --go: #ffb703;
+      --cell: #2a3670;
+      --wall: #151b38;
+      --path: #3d4a8c;
+      --r: 18px;
+      --touch: 72px;
+      --fs: 1.15rem;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; height: 100%;
+      font-family: "PingFang HK", "Noto Sans TC", "Helvetica Neue", sans-serif;
+      background: radial-gradient(ellipse at 70% 10%, #3a2a6a 0%, var(--bg1) 45%, #070b1a 100%);
+      color: var(--ink);
+      overflow: hidden;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none; opacity: .35;
+      background-image:
+        radial-gradient(2px 2px at 10% 20%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 30% 70%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 70% 30%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 85% 60%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 50% 50%, #fff 50%, transparent 51%);
+    }
+    #app { height: 100dvh; display: flex; flex-direction: column; max-width: 1100px; margin: 0 auto; padding: 10px 12px 12px; gap: 10px; position: relative; z-index: 1; }
+
+    /* screens */
+    .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
+    .screen.on { display: flex; }
+
+    /* home */
+    .home-hero { text-align: center; padding: 8px 8px 4px; }
+    .moon {
+      width: 88px; height: 88px; margin: 0 auto 8px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff7c2, #ffd76a 55%, #e8a317);
+      box-shadow: 0 0 40px rgba(255, 215, 106, .55), inset -10px -8px 0 rgba(0,0,0,.08);
+    }
+    h1 { margin: 0; font-size: clamp(1.4rem, 4vw, 2rem); letter-spacing: .04em; }
+    .sub { color: var(--muted); margin: 6px 0 14px; font-size: .95rem; }
+    .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0; align-content: center; }
+    .theme-card {
+      border: 3px solid rgba(255,255,255,.18);
+      background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(0,0,0,.15));
+      border-radius: 22px; padding: 16px 12px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      min-height: 160px; transition: transform .12s, border-color .12s, box-shadow .12s;
+    }
+    .theme-card:active { transform: scale(.97); }
+    .theme-card.neko { border-color: #6ecbff; box-shadow: 0 8px 24px rgba(80,180,255,.25); }
+    .theme-card.mario { border-color: #ff6b6b; box-shadow: 0 8px 24px rgba(255,80,80,.22); }
+    .theme-card .art { width: 96px; height: 96px; }
+    .theme-card .name { font-size: 1.25rem; font-weight: 800; }
+    .theme-card .tag { font-size: .85rem; color: var(--accent); }
+
+    /* top bar */
+    .bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: rgba(20, 24, 55, .72); border: 2px solid rgba(255,255,255,.12);
+      border-radius: 16px; padding: 8px 10px;
+    }
+    .bar .pill {
+      background: rgba(255,255,255,.1); border-radius: 999px; padding: 6px 12px;
+      font-weight: 700; font-size: var(--fs);
+    }
+    .bar .spacer { flex: 1; }
+    .icon-btn {
+      width: 48px; height: 48px; border-radius: 14px; border: 2px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08); color: var(--ink); font-size: 1.25rem; cursor: pointer;
+    }
+    .icon-btn:active { transform: scale(.95); }
+    .theme-switch {
+      display: flex; gap: 6px; background: rgba(0,0,0,.25); border-radius: 14px; padding: 4px;
+    }
+    .theme-switch button {
+      border: 0; border-radius: 10px; padding: 8px 10px; font-weight: 800; cursor: pointer;
+      background: transparent; color: var(--muted); font-size: .9rem;
+    }
+    .theme-switch button.on { background: var(--accent); color: #1a1200; }
+
+    /* play layout */
+    .play-main {
+      flex: 1; min-height: 0; display: grid;
+      grid-template-rows: 1fr auto auto;
+      gap: 10px;
+    }
+    .board-wrap {
+      display: flex; align-items: center; justify-content: center; min-height: 0;
+      background: rgba(10,14,36,.55); border: 2px solid rgba(255,255,255,.1);
+      border-radius: 20px; padding: 10px; position: relative; overflow: hidden;
+    }
+    .board-wrap .lanterns {
+      position: absolute; inset: 0; pointer-events: none; opacity: .5;
+      background:
+        radial-gradient(circle at 8% 20%, rgba(255,120,80,.35), transparent 18%),
+        radial-gradient(circle at 92% 25%, rgba(255,80,80,.3), transparent 16%);
+    }
+    .grid {
+      display: grid; gap: 6px; width: min(92vw, 520px);
+    }
+    .cell {
+      aspect-ratio: 1; border-radius: 12px; background: var(--cell);
+      border: 2px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; transition: background .15s, box-shadow .15s;
+    }
+    .cell.wall { background: var(--wall); opacity: .45; }
+    .cell.path { background: var(--path); }
+    .cell.start-glow { box-shadow: inset 0 0 0 3px rgba(255,215,106,.35); }
+    .cell.goal-glow { box-shadow: inset 0 0 0 3px rgba(61,220,151,.45); }
+    .cell.here { box-shadow: 0 0 0 3px var(--accent), 0 0 18px rgba(255,215,106,.4); }
+    .sprite { width: 78%; height: 78%; display: block; filter: drop-shadow(0 4px 4px rgba(0,0,0,.35)); transition: transform .25s ease; }
+    .sprite.face-0 { transform: rotate(0deg); }
+    .sprite.face-1 { transform: rotate(90deg); }
+    .sprite.face-2 { transform: rotate(180deg); }
+    .sprite.face-3 { transform: rotate(-90deg); }
+    .goal-icon { width: 70%; height: 70%; }
+
+    /* program strip */
+    .program-box {
+      background: rgba(20,24,55,.8); border: 2px solid rgba(255,255,255,.12);
+      border-radius: 16px; padding: 10px;
+    }
+    .program-label { font-size: .85rem; color: var(--muted); margin-bottom: 6px; font-weight: 700; }
+    .program-row { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
+    .slot {
+      min-width: 52px; height: 52px; border-radius: 12px;
+      border: 2px dashed rgba(255,255,255,.25); background: rgba(0,0,0,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 900; flex-shrink: 0;
+    }
+    .slot.filled-F { background: #3d6bff; border-style: solid; border-color: #9bb6ff; }
+    .slot.filled-B { background: #c44b7a; border-style: solid; border-color: #ffb0cb; }
+    .slot.exec { outline: 3px solid var(--accent); transform: scale(1.06); }
+    .mini-tools { display: flex; gap: 6px; margin-left: auto; }
+    .mini-tools button {
+      height: 48px; min-width: 48px; border-radius: 12px; border: 2px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08); color: var(--ink); font-weight: 800; font-size: 1rem; cursor: pointer; padding: 0 12px;
+    }
+
+    /* controls */
+    .controls {
+      display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 10px;
+    }
+    .big-btn {
+      min-height: var(--touch); border-radius: 18px; border: 3px solid rgba(255,255,255,.2);
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem); font-weight: 900; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      box-shadow: 0 6px 0 rgba(0,0,0,.25); transition: transform .08s, filter .08s;
+    }
+    .big-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+    .big-btn:disabled { filter: grayscale(.4) brightness(.7); cursor: not-allowed; }
+    .big-btn .glyph { font-size: 1.5em; line-height: 1; }
+    .btn-f { background: linear-gradient(180deg, #6e8fff, #3b5bdb); color: white; }
+    .btn-b { background: linear-gradient(180deg, #ff9ec0, #e64980); color: white; }
+    .btn-go { background: linear-gradient(180deg, #ffe066, #f59f00); color: #2b1d00; border-color: #ffe8a3; }
+    .btn-go.running { background: linear-gradient(180deg, #adb5bd, #868e96); color: #111; }
+
+    /* overlays */
+    .overlay {
+      position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(5,8,20,.72); z-index: 20; border-radius: 20px; padding: 16px;
+    }
+    .overlay.on { display: flex; }
+    .modal {
+      background: linear-gradient(165deg, #2a2158, #12182f);
+      border: 3px solid var(--accent); border-radius: 22px; padding: 22px 18px; text-align: center;
+      width: min(92%, 380px); box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+    .modal h2 { margin: 0 0 8px; font-size: 1.6rem; }
+    .modal p { margin: 0 0 16px; color: var(--muted); }
+    .modal .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .modal button {
+      min-height: 52px; min-width: 120px; border-radius: 14px; border: 0; font-weight: 900;
+      font-size: 1.1rem; padding: 0 16px; cursor: pointer;
+    }
+    .m-ok { background: var(--ok); color: #062616; }
+    .m-retry { background: var(--btn); color: white; }
+    .m-home { background: rgba(255,255,255,.12); color: white; border: 2px solid rgba(255,255,255,.2) !important; }
+
+    /* teacher */
+    .teacher {
+      display: none; position: absolute; right: 12px; top: 62px; z-index: 30;
+      background: #12182f; border: 2px solid rgba(255,255,255,.2); border-radius: 14px;
+      padding: 12px; width: min(280px, 90vw); box-shadow: 0 12px 30px rgba(0,0,0,.4);
+    }
+    .teacher.on { display: block; }
+    .teacher label { display: block; font-size: .85rem; color: var(--muted); margin: 8px 0 4px; }
+    .teacher select, .teacher button {
+      width: 100%; min-height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2);
+      background: #1e2748; color: white; font-size: 1rem; padding: 6px 8px;
+    }
+    .teacher button { margin-top: 8px; background: var(--btn); border: 0; font-weight: 700; cursor: pointer; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(120%);
+      background: rgba(20,20,40,.95); color: white; padding: 10px 18px; border-radius: 999px;
+      border: 2px solid var(--accent); font-weight: 800; z-index: 50; transition: transform .2s;
+      pointer-events: none;
+    }
+    .toast.on { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 700px) {
+      :root { --touch: 64px; }
+      .theme-card { min-height: 140px; }
+      .slot { min-width: 44px; height: 44px; font-size: 1.15rem; }
+    }
+    @media (orientation: portrait) and (max-width: 900px) {
+      .play-main { grid-template-rows: minmax(160px, 1fr) auto auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- HOME -->
+    <section id="screen-home" class="screen on">
+      <div class="home-hero">
+        <div class="moon" aria-hidden="true"></div>
+        <h1>中秋方向編程</h1>
+        <p class="sub">學「前」同「後」· 送月餅到終點</p>
+      </div>
+      <div class="theme-grid">
+        <button type="button" class="theme-card neko" data-theme="neko" aria-label="選哆啦A夢中秋">
+          <div class="art" id="home-neko"></div>
+          <div class="name">哆啦A夢</div>
+          <div class="tag">中秋 · 送銅鑼燒月餅</div>
+        </button>
+        <button type="button" class="theme-card mario" data-theme="mario" aria-label="選瑪利歐中秋">
+          <div class="art" id="home-mario"></div>
+          <div class="name">瑪利歐</div>
+          <div class="tag">中秋 · 送金幣月餅</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- PLAY -->
+    <section id="screen-play" class="screen">
+      <div class="bar">
+        <span class="pill" id="level-pill">關 1/6</span>
+        <span class="pill" id="goal-pill">去終點</span>
+        <div class="spacer"></div>
+        <div class="theme-switch" role="group" aria-label="主題">
+          <button type="button" id="sw-neko" class="on">哆啦A夢</button>
+          <button type="button" id="sw-mario">瑪利歐</button>
+        </div>
+        <button type="button" class="icon-btn" id="btn-speak" title="讀題">🔊</button>
+        <button type="button" class="icon-btn" id="btn-home" title="主頁">🏠</button>
+        <button type="button" class="icon-btn" id="btn-teacher" title="老師">⚙</button>
+      </div>
+
+      <div class="teacher" id="teacher-panel">
+        <strong>老師角</strong>
+        <label>跳關</label>
+        <select id="t-level"></select>
+        <label>語音</label>
+        <select id="t-voice">
+          <option value="1">開</option>
+          <option value="0">關</option>
+        </select>
+        <button type="button" id="t-reset">重設本關</button>
+        <button type="button" id="t-close">關閉</button>
+      </div>
+
+      <div class="play-main">
+        <div class="board-wrap" id="board-wrap">
+          <div class="lanterns"></div>
+          <div class="grid" id="grid" role="grid" aria-label="地圖"></div>
+          <div class="overlay" id="overlay-win">
+            <div class="modal">
+              <h2 id="win-title">成功！</h2>
+              <p id="win-msg">月餅送到啦</p>
+              <div class="row">
+                <button type="button" class="m-ok" id="btn-next">下一關</button>
+                <button type="button" class="m-home" id="btn-win-home">主頁</button>
+              </div>
+            </div>
+          </div>
+          <div class="overlay" id="overlay-fail">
+            <div class="modal">
+              <h2>撞到嘢</h2>
+              <p>唔緊要，再試一次</p>
+              <div class="row">
+                <button type="button" class="m-retry" id="btn-retry">再試</button>
+              </div>
+            </div>
+          </div>
+          <div class="overlay" id="overlay-done">
+            <div class="modal">
+              <h2>中秋完成！</h2>
+              <p>6 關方向練習全部通過</p>
+              <div class="row">
+                <button type="button" class="m-ok" id="btn-again">再玩</button>
+                <button type="button" class="m-home" id="btn-done-home">主頁</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="program-box">
+          <div class="program-label">我嘅程式（最多 6 步）</div>
+          <div class="program-row" id="program-row"></div>
+        </div>
+
+        <div class="controls">
+          <button type="button" class="big-btn btn-f" id="btn-f"><span class="glyph">▲</span><span>前</span></button>
+          <button type="button" class="big-btn btn-b" id="btn-b"><span class="glyph">▼</span><span>後</span></button>
+          <button type="button" class="big-btn btn-go" id="btn-go"><span class="glyph">▶</span><span>走</span></button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const MAX_STEPS = 6;
+    const COLS = 5;
+    const ROWS = 1; // visual row of path; rendered as 1x5 strip inside padded look
+    // Use 1-row 5-col path maps for MVP clarity
+
+    /** Levels: positions on 0..4 x-axis, y always 0. facing 1=E or 3=W */
+    const LEVELS = [
+      { id: 1, len: 4, start: 0, goal: 1, facing: 1, hint: '行前 1 步' },
+      { id: 2, len: 5, start: 0, goal: 2, facing: 1, hint: '行前 2 步' },
+      { id: 3, len: 5, start: 0, goal: 3, facing: 1, hint: '行前 3 步' },
+      { id: 4, len: 5, start: 3, goal: 2, facing: 1, hint: '行後 1 步' },
+      { id: 5, len: 5, start: 4, goal: 2, facing: 1, hint: '行後 2 步' },
+      { id: 6, len: 3, start: 0, goal: 1, facing: 1, hint: '只行前 1 步（唔好行多）' },
+    ];
+
+    const THEMES = {
+      neko: {
+        name: '哆啦A夢',
+        goalName: '銅鑼燒月餅',
+        win: '銅鑼燒月餅送到啦！',
+        color: '#6ecbff',
+      },
+      mario: {
+        name: '瑪利歐',
+        goalName: '金幣月餅',
+        win: '金幣月餅送到啦！',
+        color: '#ff6b6b',
+      },
+    };
+
+    const state = {
+      theme: 'neko',
+      levelIdx: 0,
+      facing: 1,
+      pos: 0,
+      goal: 1,
+      len: 5,
+      program: [],
+      running: false,
+      voice: true,
+      status: 'play', // play|win|fail|done
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const gridEl = $('grid');
+    const programRow = $('program-row');
+
+    // —— SVG sprites (original geometric, not official IP art) ——
+    function svgNeko() {
+      return `<svg class="sprite" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="40" cy="48" rx="22" ry="20" fill="#4db3ff"/>
+        <circle cx="40" cy="32" r="22" fill="#5bc0ff"/>
+        <circle cx="40" cy="32" r="18" fill="#7dd3ff"/>
+        <ellipse cx="28" cy="14" rx="7" ry="10" fill="#5bc0ff"/>
+        <ellipse cx="52" cy="14" rx="7" ry="10" fill="#5bc0ff"/>
+        <circle cx="33" cy="30" r="4" fill="#1a1a2e"/>
+        <circle cx="47" cy="30" r="4" fill="#1a1a2e"/>
+        <circle cx="34" cy="29" r="1.3" fill="#fff"/>
+        <circle cx="48" cy="29" r="1.3" fill="#fff"/>
+        <ellipse cx="40" cy="38" rx="3" ry="2" fill="#ff7aa2"/>
+        <rect x="34" y="44" width="12" height="8" rx="3" fill="#fff"/>
+        <circle cx="40" cy="48" r="3" fill="#ffd76a" stroke="#e8a317" stroke-width="1"/>
+        <path d="M18 36 Q12 40 16 46" stroke="#5bc0ff" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M62 36 Q68 40 64 46" stroke="#5bc0ff" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>`;
+    }
+    function svgMario() {
+      return `<svg class="sprite" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="40" cy="58" rx="16" ry="10" fill="#2b6cb0"/>
+        <rect x="28" y="40" width="24" height="20" rx="6" fill="#e53e3e"/>
+        <circle cx="40" cy="30" r="16" fill="#f6c29a"/>
+        <path d="M22 24 h36 v8 h-8 v4 h-20 v-4 h-8 z" fill="#e53e3e"/>
+        <rect x="30" y="18" width="20" height="8" rx="2" fill="#e53e3e"/>
+        <circle cx="34" cy="30" r="2.5" fill="#1a1a2e"/>
+        <circle cx="46" cy="30" r="2.5" fill="#1a1a2e"/>
+        <path d="M34 36 q6 4 12 0" stroke="#c05621" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <rect x="24" y="44" width="10" height="8" rx="2" fill="#f6c29a"/>
+        <rect x="46" y="44" width="10" height="8" rx="2" fill="#f6c29a"/>
+        <circle cx="40" cy="48" r="3" fill="#ffd76a"/>
+      </svg>`;
+    }
+    function svgGoal(theme) {
+      if (theme === 'mario') {
+        return `<svg class="goal-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="32" cy="36" rx="20" ry="14" fill="#f6e05e" stroke="#d69e2e" stroke-width="2"/>
+          <ellipse cx="32" cy="34" rx="14" ry="8" fill="#feebc8"/>
+          <circle cx="32" cy="34" r="6" fill="#ecc94b" stroke="#b7791f" stroke-width="2"/>
+          <text x="32" y="38" text-anchor="middle" font-size="10" font-weight="bold" fill="#744210">$</text>
+          <path d="M18 22 q14 -16 28 0" stroke="#f6ad55" stroke-width="3" fill="none"/>
+        </svg>`;
+      }
+      return `<svg class="goal-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="32" cy="38" rx="22" ry="14" fill="#c05621" stroke="#7b341e" stroke-width="2"/>
+        <ellipse cx="32" cy="34" rx="18" ry="11" fill="#ed8936"/>
+        <ellipse cx="32" cy="32" rx="12" ry="7" fill="#fbd38d"/>
+        <circle cx="32" cy="32" r="4" fill="#c05621"/>
+        <path d="M20 20 q12 -14 24 0" stroke="#fc8181" stroke-width="3" fill="none"/>
+      </svg>`;
+    }
+    function characterSVG(theme) {
+      return theme === 'mario' ? svgMario() : svgNeko();
+    }
+
+    // mount home arts
+    $('home-neko').innerHTML = svgNeko();
+    $('home-mario').innerHTML = svgMario();
+
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('on');
+      clearTimeout(toast._tm);
+      toast._tm = setTimeout(() => t.classList.remove('on'), 1400);
+    }
+
+    function speak(text) {
+      if (!state.voice || !window.speechSynthesis) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'zh-HK';
+        u.rate = 0.95;
+        const voices = window.speechSynthesis.getVoices();
+        const v = voices.find(x => /zh(-|_)?HK|yue|cantonese/i.test(x.lang + x.name))
+          || voices.find(x => /zh|chinese|國語|普通話/i.test(x.lang + x.name));
+        if (v) u.voice = v;
+        window.speechSynthesis.speak(u);
+      } catch (_) {}
+    }
+
+    function unlockAudio() {
+      speak(' ');
+    }
+
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+      $('screen-' + name).classList.add('on');
+    }
+
+    function setOverlays(which) {
+      ['win', 'fail', 'done'].forEach(k => {
+        $('overlay-' + k).classList.toggle('on', which === k);
+      });
+    }
+
+    function loadLevel(idx) {
+      const L = LEVELS[idx];
+      state.levelIdx = idx;
+      state.len = L.len;
+      state.pos = L.start;
+      state.goal = L.goal;
+      state.facing = L.facing;
+      state.program = [];
+      state.running = false;
+      state.status = 'play';
+      setOverlays(null);
+      $('level-pill').textContent = '關 ' + L.id + '/' + LEVELS.length;
+      $('goal-pill').textContent = L.hint;
+      updateThemeSwitch();
+      renderAll();
+      setControlsEnabled(true);
+    }
+
+    function updateThemeSwitch() {
+      $('sw-neko').classList.toggle('on', state.theme === 'neko');
+      $('sw-mario').classList.toggle('on', state.theme === 'mario');
+    }
+
+    function renderGrid() {
+      const n = state.len;
+      gridEl.style.gridTemplateColumns = 'repeat(' + n + ', 1fr)';
+      gridEl.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell path';
+        cell.setAttribute('role', 'gridcell');
+        if (i === LEVELS[state.levelIdx].start) cell.classList.add('start-glow');
+        if (i === state.goal) cell.classList.add('goal-glow');
+        if (i === state.pos) cell.classList.add('here');
+
+        if (i === state.goal && i !== state.pos) {
+          cell.innerHTML = svgGoal(state.theme);
+        }
+        if (i === state.pos) {
+          const wrap = document.createElement('div');
+          wrap.style.width = '100%';
+          wrap.style.height = '100%';
+          wrap.style.display = 'flex';
+          wrap.style.alignItems = 'center';
+          wrap.style.justifyContent = 'center';
+          wrap.innerHTML = characterSVG(state.theme);
+          const sp = wrap.querySelector('.sprite');
+          if (sp) sp.classList.add('face-' + state.facing);
+          cell.appendChild(wrap);
+        }
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function renderProgram(execIdx) {
+      programRow.innerHTML = '';
+      for (let i = 0; i < MAX_STEPS; i++) {
+        const slot = document.createElement('div');
+        const cmd = state.program[i];
+        slot.className = 'slot';
+        if (cmd === 'F') { slot.classList.add('filled-F'); slot.textContent = '前'; }
+        else if (cmd === 'B') { slot.classList.add('filled-B'); slot.textContent = '後'; }
+        else slot.textContent = '';
+        if (execIdx === i) slot.classList.add('exec');
+        programRow.appendChild(slot);
+      }
+      const tools = document.createElement('div');
+      tools.className = 'mini-tools';
+      tools.innerHTML = '<button type="button" id="btn-undo" aria-label="刪一步">⌫</button><button type="button" id="btn-clear" aria-label="清空">清空</button>';
+      programRow.appendChild(tools);
+      $('btn-undo').onclick = () => {
+        if (state.running) return;
+        state.program.pop();
+        renderProgram();
+      };
+      $('btn-clear').onclick = () => {
+        if (state.running) return;
+        state.program = [];
+        renderProgram();
+      };
+    }
+
+    function renderAll(execIdx) {
+      renderGrid();
+      renderProgram(execIdx);
+    }
+
+    function setControlsEnabled(on) {
+      $('btn-f').disabled = !on;
+      $('btn-b').disabled = !on;
+      $('btn-go').disabled = !on;
+      $('btn-go').classList.toggle('running', !on && state.running);
+    }
+
+    function addCmd(cmd) {
+      if (state.running || state.status !== 'play') return;
+      unlockAudio();
+      if (state.program.length >= MAX_STEPS) {
+        toast('最多 6 步');
+        return;
+      }
+      state.program.push(cmd);
+      renderProgram();
+      speak(cmd === 'F' ? '前' : '後');
+    }
+
+    function deltaFor(cmd, facing) {
+      // facing: 0N 1E 2S 3W — on 1D row we only use E/W effectively
+      const forward = facing === 1 ? 1 : facing === 3 ? -1 : facing === 0 ? 0 : 0;
+      // For 1D levels facing is always E(1). F = +1, B = -1 along axis when facing E
+      // General: move along facing for F, opposite for B
+      const dir = (cmd === 'F') ? facing : (facing + 2) % 4;
+      if (dir === 1) return 1;
+      if (dir === 3) return -1;
+      return 0; // N/S unused on 1D
+    }
+
+    function stepOnce(cmd) {
+      const d = deltaFor(cmd, state.facing);
+      const next = state.pos + d;
+      if (next < 0 || next >= state.len) return 'fail';
+      state.pos = next;
+      // 唔中途 win：要成段程式跑完，先睇係唔係企喺終點（教「唔好行多」）
+      return 'ok';
+    }
+
+    function finalResult() {
+      return state.pos === state.goal ? 'win' : 'miss';
+    }
+
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    async function runProgram() {
+      if (state.running || state.status !== 'play') return;
+      unlockAudio();
+      if (state.program.length === 0) {
+        toast('先撳「前」或「後」');
+        speak('先揀方向');
+        return;
+      }
+      state.running = true;
+      setControlsEnabled(false);
+      // reset actor to start before run
+      const L = LEVELS[state.levelIdx];
+      state.pos = L.start;
+      state.facing = L.facing;
+      renderAll();
+      await sleep(280);
+
+      for (let i = 0; i < state.program.length; i++) {
+        const cmd = state.program[i];
+        renderProgram(i);
+        speak(cmd === 'F' ? '前' : '後');
+        await sleep(320);
+        const res = stepOnce(cmd);
+        renderGrid();
+        await sleep(480);
+        if (res === 'fail') {
+          state.status = 'fail';
+          state.running = false;
+          setOverlays('fail');
+          speak('撞到嘢，再試一次');
+          return;
+        }
+      }
+      if (finalResult() === 'win') {
+        state.status = 'win';
+        state.running = false;
+        onWin();
+      } else {
+        state.status = 'fail';
+        state.running = false;
+        setOverlays('fail');
+        speak('未到終點，再試一次');
+      }
+    }
+
+    function onWin() {
+      const t = THEMES[state.theme];
+      $('win-title').textContent = '成功！';
+      $('win-msg').textContent = t.win;
+      const isLast = state.levelIdx >= LEVELS.length - 1;
+      $('btn-next').textContent = isLast ? '完成' : '下一關';
+      setOverlays(isLast ? 'done' : 'win');
+      if (isLast) speak('中秋完成');
+      else speak('成功');
+      try { confettiBurst(); } catch (_) {}
+    }
+
+    function confettiBurst() {
+      const wrap = $('board-wrap');
+      for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.style.cssText = 'position:absolute;width:10px;height:10px;border-radius:2px;pointer-events:none;z-index:5;left:50%;top:40%;';
+        p.style.background = ['#ffd76a','#ff6b6b','#6ecbff','#3ddc97','#fff'][i % 5];
+        wrap.appendChild(p);
+        const ang = (Math.PI * 2 * i) / 18;
+        const dist = 60 + Math.random() * 80;
+        p.animate([
+          { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+          { transform: 'translate(calc(-50% + ' + Math.cos(ang)*dist + 'px), calc(-50% + ' + Math.sin(ang)*dist + 'px)) scale(0)', opacity: 0 }
+        ], { duration: 900, easing: 'ease-out' }).onfinish = () => p.remove();
+      }
+    }
+
+    function startTheme(theme) {
+      unlockAudio();
+      state.theme = theme;
+      try { localStorage.setItem('midautumn_dir_theme', theme); } catch (_) {}
+      showScreen('play');
+      loadLevel(0);
+      speak(THEMES[theme].name + '，開始');
+    }
+
+    // events
+    document.querySelectorAll('.theme-card').forEach(btn => {
+      btn.addEventListener('click', () => startTheme(btn.getAttribute('data-theme')));
+    });
+    $('btn-f').onclick = () => addCmd('F');
+    $('btn-b').onclick = () => addCmd('B');
+    $('btn-go').onclick = () => runProgram();
+    $('btn-home').onclick = () => {
+      if (state.running) return;
+      showScreen('home');
+      setOverlays(null);
+      $('teacher-panel').classList.remove('on');
+    };
+    $('btn-win-home').onclick = () => $('btn-home').click();
+    $('btn-done-home').onclick = () => $('btn-home').click();
+    $('btn-next').onclick = () => {
+      if (state.levelIdx >= LEVELS.length - 1) {
+        setOverlays('done');
+        return;
+      }
+      loadLevel(state.levelIdx + 1);
+      speak('下一關');
+    };
+    $('btn-again').onclick = () => loadLevel(0);
+    $('btn-retry').onclick = () => loadLevel(state.levelIdx);
+    $('btn-speak').onclick = () => {
+      unlockAudio();
+      const L = LEVELS[state.levelIdx];
+      speak(THEMES[state.theme].name + '。' + L.hint + '。終點係' + THEMES[state.theme].goalName);
+    };
+    $('sw-neko').onclick = () => {
+      if (state.running) return;
+      state.theme = 'neko';
+      updateThemeSwitch();
+      renderAll();
+      toast('哆啦A夢 · 中秋');
+    };
+    $('sw-mario').onclick = () => {
+      if (state.running) return;
+      state.theme = 'mario';
+      updateThemeSwitch();
+      renderAll();
+      toast('瑪利歐 · 中秋');
+    };
+
+    // teacher
+    const tLevel = $('t-level');
+    LEVELS.forEach((L, i) => {
+      const o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = '關 ' + L.id + ' · ' + L.hint;
+      tLevel.appendChild(o);
+    });
+    $('btn-teacher').onclick = () => {
+      $('teacher-panel').classList.toggle('on');
+      tLevel.value = String(state.levelIdx);
+      $('t-voice').value = state.voice ? '1' : '0';
+    };
+    $('t-close').onclick = () => $('teacher-panel').classList.remove('on');
+    tLevel.onchange = () => {
+      loadLevel(parseInt(tLevel.value, 10) || 0);
+    };
+    $('t-voice').onchange = () => {
+      state.voice = $('t-voice').value === '1';
+    };
+    $('t-reset').onclick = () => loadLevel(state.levelIdx);
+
+    // restore theme pref on home only
+    try {
+      const th = localStorage.getItem('midautumn_dir_theme');
+      if (th === 'neko' || th === 'mario') state.theme = th;
+    } catch (_) {}
+
+    // voiceschanged
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = function () {};
+    }
+
+    // Expose for tests
+    window.DirCoding = {
+      LEVELS, state, stepOnce, deltaFor, loadLevel, addCmd, characterSVG,
+      runResetPos() {
+        const L = LEVELS[state.levelIdx];
+        state.pos = L.start; state.facing = L.facing;
+      },
+      simulate(cmds) {
+        const L = LEVELS[state.levelIdx];
+        state.pos = L.start; state.facing = L.facing; state.status = 'play';
+        for (const c of cmds) {
+          const last = stepOnce(c);
+          if (last !== 'ok') return last;
+        }
+        return finalResult();
+      },
+      finalResult,
+    };
+  })();
+  </script>
+</body>
+</html>
