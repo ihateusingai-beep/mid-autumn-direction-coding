@@ -339,6 +339,43 @@
       .theme-switch button { padding: 7px 8px; font-size: .78rem; }
       .slot { min-width: 48px; height: 48px; }
     }
+
+    /* difficulty */
+    .diff-grid {
+      flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr;
+      gap: 12px; align-content: center; padding: 8px 0;
+      max-width: 520px; width: 100%; margin: 0 auto;
+    }
+    @media (min-width: 700px) {
+      .diff-grid { grid-template-columns: 1fr 1fr 1fr; max-width: 900px; }
+    }
+    .diff-card {
+      border: 3px solid rgba(255,255,255,.22);
+      background: linear-gradient(165deg, rgba(255,255,255,.14), rgba(0,0,0,.22));
+      border-radius: 22px; padding: 18px 14px; cursor: pointer; text-align: center;
+      min-height: 120px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    }
+    .diff-card:active { transform: scale(.97); }
+    .diff-card.easy { border-color: #3ddc97; }
+    .diff-card.mid { border-color: #ffd76a; }
+    .diff-card.hard { border-color: #ff6b7a; }
+    .diff-card .d-emoji { font-size: 2rem; line-height: 1; }
+    .diff-card .d-name { font-size: 1.45rem; font-weight: 900; }
+    .diff-card .d-desc { font-size: .92rem; color: var(--muted); font-weight: 700; line-height: 1.35; }
+    .diff-back {
+      align-self: center; margin-top: 4px; min-height: 48px; padding: 0 20px;
+      border-radius: 14px; border: 2px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.08); color: var(--ink); font-weight: 800; font-size: 1rem; cursor: pointer;
+    }
+    .pill.diff {
+      background: rgba(61,220,151,.18); color: #b8f5d6; border: 1px solid rgba(61,220,151,.35);
+    }
+    .pill.diff.mid-d { background: rgba(255,215,106,.18); color: var(--gold); border-color: rgba(255,215,106,.35); }
+    .pill.diff.hard-d { background: rgba(255,107,122,.18); color: #ffb3bb; border-color: rgba(255,107,122,.4); }
+    .controls.easy-mode { grid-template-columns: 1.2fr 1.4fr; }
+    .controls.easy-mode .btn-b { display: none; }
+
     @media (prefers-reduced-motion: reduce) {
       .moon, .goal-icon, .cell.goal-glow, .actor.hop, .modal { animation: none !important; }
     }
@@ -367,12 +404,38 @@
           <div class="tag">送金幣月餅</div>
         </button>
       </div>
-      <p class="home-tip">揀一個角色開始 · 適合 iPad</p>
+      <p class="home-tip">① 揀角色　② 揀難度</p>
+    </section>
+
+    <section id="screen-diff" class="screen">
+      <div class="home-hero">
+        <h1>揀難度</h1>
+        <p class="sub" id="diff-theme-label">角色</p>
+      </div>
+      <div class="diff-grid">
+        <button type="button" class="diff-card easy" data-diff="easy" aria-label="初級">
+          <span class="d-emoji">🌱</span>
+          <span class="d-name">初</span>
+          <span class="d-desc">只學「前」· 4 關</span>
+        </button>
+        <button type="button" class="diff-card mid" data-diff="mid" aria-label="中級">
+          <span class="d-emoji">🌕</span>
+          <span class="d-name">中</span>
+          <span class="d-desc">「前」+「後」· 6 關</span>
+        </button>
+        <button type="button" class="diff-card hard" data-diff="hard" aria-label="高級">
+          <span class="d-emoji">🚀</span>
+          <span class="d-name">高</span>
+          <span class="d-desc">長路 + 轉向 · 8 關</span>
+        </button>
+      </div>
+      <button type="button" class="diff-back" id="btn-diff-back">← 返去揀角色</button>
     </section>
 
     <section id="screen-play" class="screen">
       <div class="bar">
         <div class="pills">
+          <span class="pill diff" id="diff-pill">初</span>
           <span class="pill" id="level-pill">關 1/6</span>
           <span class="pill hint" id="goal-pill">行前 1 步</span>
           <div class="dots" id="level-dots" aria-hidden="true"></div>
@@ -389,6 +452,12 @@
 
       <div class="teacher" id="teacher-panel">
         <strong>老師角</strong>
+        <label>難度</label>
+        <select id="t-diff">
+          <option value="easy">初</option>
+          <option value="mid">中</option>
+          <option value="hard">高</option>
+        </select>
         <label>跳關</label>
         <select id="t-level"></select>
         <label>語音</label>
@@ -431,7 +500,7 @@
             <div class="modal">
               <div class="stars">🌕✨</div>
               <h2>中秋完成！</h2>
-              <p>6 關方向練習全部通過</p>
+              <p id="done-msg">方向練習全部通過</p>
               <div class="row">
                 <button type="button" class="m-ok" id="btn-again">再玩</button>
                 <button type="button" class="m-home" id="btn-done-home">主頁</button>
@@ -462,15 +531,66 @@
   (function () {
     'use strict';
 
-    const MAX_STEPS = 6;
-    const LEVELS = [
-      { id: 1, len: 4, start: 0, goal: 1, facing: 1, hint: '行前 1 步', min: 1 },
-      { id: 2, len: 5, start: 0, goal: 2, facing: 1, hint: '行前 2 步', min: 2 },
-      { id: 3, len: 5, start: 0, goal: 3, facing: 1, hint: '行前 3 步', min: 3 },
-      { id: 4, len: 5, start: 3, goal: 2, facing: 1, hint: '行後 1 步', min: 1 },
-      { id: 5, len: 5, start: 4, goal: 2, facing: 1, hint: '行後 2 步', min: 2 },
-      { id: 6, len: 3, start: 0, goal: 1, facing: 1, hint: '只行前 1 步', min: 1 },
-    ];
+    const PACKS = {
+      easy: {
+        key: 'easy',
+        label: '初',
+        pillClass: '',
+        cmds: ['F'],
+        maxSteps: 4,
+        levels: [
+          { id: 1, len: 3, start: 0, goal: 1, facing: 1, hint: '行前 1 步', min: 1 },
+          { id: 2, len: 4, start: 0, goal: 2, facing: 1, hint: '行前 2 步', min: 2 },
+          { id: 3, len: 5, start: 0, goal: 3, facing: 1, hint: '行前 3 步', min: 3 },
+          { id: 4, len: 4, start: 0, goal: 1, facing: 1, hint: '只行前 1 步', min: 1 },
+        ],
+      },
+      mid: {
+        key: 'mid',
+        label: '中',
+        pillClass: 'mid-d',
+        cmds: ['F', 'B'],
+        maxSteps: 6,
+        levels: [
+          { id: 1, len: 4, start: 0, goal: 1, facing: 1, hint: '行前 1 步', min: 1 },
+          { id: 2, len: 5, start: 0, goal: 2, facing: 1, hint: '行前 2 步', min: 2 },
+          { id: 3, len: 5, start: 0, goal: 3, facing: 1, hint: '行前 3 步', min: 3 },
+          { id: 4, len: 5, start: 3, goal: 2, facing: 1, hint: '行後 1 步', min: 1 },
+          { id: 5, len: 5, start: 4, goal: 2, facing: 1, hint: '行後 2 步', min: 2 },
+          { id: 6, len: 3, start: 0, goal: 1, facing: 1, hint: '只行前 1 步', min: 1 },
+        ],
+      },
+      hard: {
+        key: 'hard',
+        label: '高',
+        pillClass: 'hard-d',
+        cmds: ['F', 'B'],
+        maxSteps: 8,
+        levels: [
+          { id: 1, len: 6, start: 0, goal: 4, facing: 1, hint: '行前 4 步', min: 4 },
+          { id: 2, len: 6, start: 5, goal: 1, facing: 1, hint: '行後 4 步', min: 4 },
+          { id: 3, len: 7, start: 0, goal: 5, facing: 1, hint: '行前 5 步', min: 5 },
+          { id: 4, len: 6, start: 5, goal: 2, facing: 3, hint: '面向左，行前 3 步', min: 3 },
+          { id: 5, len: 6, start: 0, goal: 3, facing: 1, hint: '行前 3 步', min: 3 },
+          { id: 6, len: 7, start: 6, goal: 2, facing: 3, hint: '面向左，行前 4 步', min: 4 },
+          { id: 7, len: 5, start: 0, goal: 2, facing: 1, hint: '只行前 2 步', min: 2 },
+          { id: 8, len: 4, start: 3, goal: 1, facing: 3, hint: '面向左，只行前 2 步', min: 2 },
+        ],
+      },
+    };
+
+    function getPack() {
+      return PACKS[state.diff] || PACKS.mid;
+    }
+    function getLevels() {
+      return getPack().levels;
+    }
+    function getMaxSteps() {
+      return getPack().maxSteps;
+    }
+
+    // back-compat alias used in tests
+    var LEVELS = PACKS.mid.levels;
 
     const THEMES = {
       neko: { name: '哆啦A夢', goalName: '銅鑼燒月餅', win: '銅鑼燒月餅送到啦！' },
@@ -479,6 +599,7 @@
 
     const state = {
       theme: 'neko',
+      diff: 'mid',
       levelIdx: 0,
       facing: 1,
       pos: 0,
@@ -556,7 +677,7 @@
     $('home-neko').innerHTML = svgNeko();
     $('home-mario').innerHTML = svgMario();
 
-    /* —— SFX (Web Audio) —— */
+    /* —— SFX —— */
     let audioCtx = null;
     function ensureAudio() {
       if (!audioCtx) {
@@ -635,10 +756,34 @@
       });
     }
 
+    function applyDiffUI() {
+      const pack = getPack();
+      LEVELS = pack.levels;
+      const pill = $('diff-pill');
+      pill.textContent = pack.label;
+      pill.className = 'pill diff' + (pack.pillClass ? ' ' + pack.pillClass : '');
+      const controls = document.querySelector('.controls');
+      if (controls) {
+        controls.classList.toggle('easy-mode', pack.key === 'easy');
+      }
+      $('btn-b').style.display = pack.cmds.indexOf('B') >= 0 ? '' : 'none';
+      // rebuild teacher levels
+      const tLevel = $('t-level');
+      tLevel.innerHTML = '';
+      pack.levels.forEach((L, i) => {
+        const o = document.createElement('option');
+        o.value = String(i);
+        o.textContent = '關 ' + L.id + ' · ' + L.hint;
+        tLevel.appendChild(o);
+      });
+      if ($('t-diff')) $('t-diff').value = pack.key;
+    }
+
     function renderDots() {
+      const levels = getLevels();
       const box = $('level-dots');
       box.innerHTML = '';
-      LEVELS.forEach((_, i) => {
+      levels.forEach((_, i) => {
         const d = document.createElement('span');
         d.className = 'dot';
         if (i < state.levelIdx) d.classList.add('done');
@@ -660,7 +805,10 @@
     }
 
     function loadLevel(idx, keepProgram) {
-      const L = LEVELS[idx];
+      const levels = getLevels();
+      if (idx >= levels.length) idx = levels.length - 1;
+      if (idx < 0) idx = 0;
+      const L = levels[idx];
       state.levelIdx = idx;
       state.len = L.len;
       state.pos = L.start;
@@ -672,18 +820,22 @@
       state.visited = [L.start];
       state.failReason = '';
       setOverlays(null);
-      $('level-pill').textContent = '關 ' + L.id + '/' + LEVELS.length;
+      applyDiffUI();
+      $('level-pill').textContent = '關 ' + L.id + '/' + levels.length;
       $('goal-pill').textContent = L.hint;
       updateThemeSwitch();
       renderDots();
       renderAll();
       setControlsEnabled(true);
 
-      if (idx === 0 && !state.coachSeen) {
-        showCoach('① 撳「前」加入程式　② 撳「走」');
-      } else if (idx === 3) {
+      if (getPack().key === 'easy' && idx === 0 && !state.coachSeen) {
+        showCoach('① 撳「前」　② 撳「走」');
+      } else if (getPack().key === 'mid' && idx === 3) {
         showCoach('呢關要用「後」▼');
         setTimeout(() => showCoach(''), 2800);
+      } else if (getPack().key === 'hard' && (L.facing === 3) && idx === 3) {
+        showCoach('角色面向左，撳「前」會向左行');
+        setTimeout(() => showCoach(''), 3200);
       } else {
         showCoach('');
       }
@@ -691,13 +843,14 @@
 
     function renderGrid(hop) {
       const n = state.len;
+      const levels = getLevels();
       gridEl.style.gridTemplateColumns = 'repeat(' + n + ', 1fr)';
       gridEl.innerHTML = '';
       for (let i = 0; i < n; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.setAttribute('role', 'gridcell');
-        if (i === LEVELS[state.levelIdx].start) cell.classList.add('start-glow');
+        if (i === levels[state.levelIdx].start) cell.classList.add('start-glow');
         if (i === state.goal) cell.classList.add('goal-glow');
         if (state.visited.indexOf(i) >= 0) cell.classList.add('visited');
         if (i === state.pos) cell.classList.add('here');
@@ -713,7 +866,6 @@
           arrow.className = 'face-arrow f' + state.facing;
           arrow.setAttribute('aria-hidden', 'true');
           actor.appendChild(arrow);
-          // if standing on goal, small goal badge
           if (i === state.goal) {
             const badge = document.createElement('div');
             badge.style.cssText = 'position:absolute;top:-6px;right:-4px;width:28%;height:28%';
@@ -727,8 +879,9 @@
     }
 
     function renderProgram(execIdx) {
+      const maxS = getMaxSteps();
       programRow.innerHTML = '';
-      for (let i = 0; i < MAX_STEPS; i++) {
+      for (let i = 0; i < maxS; i++) {
         const slot = document.createElement('div');
         const cmd = state.program[i];
         slot.className = 'slot';
@@ -765,7 +918,7 @@
     }
 
     function updateStepCount() {
-      $('step-count').textContent = state.program.length + ' / ' + MAX_STEPS + ' 步';
+      $('step-count').textContent = state.program.length + ' / ' + getMaxSteps() + ' 步';
     }
 
     function renderAll(hop, execIdx) {
@@ -782,9 +935,11 @@
 
     function addCmd(cmd) {
       if (state.running || state.status !== 'play') return;
+      const pack = getPack();
+      if (pack.cmds.indexOf(cmd) < 0) return;
       unlockAudio();
-      if (state.program.length >= MAX_STEPS) {
-        toast('最多 6 步');
+      if (state.program.length >= getMaxSteps()) {
+        toast('最多 ' + getMaxSteps() + ' 步');
         SFX.fail();
         return;
       }
@@ -792,9 +947,9 @@
       if (cmd === 'F') SFX.addF(); else SFX.addB();
       renderProgram();
       speak(cmd === 'F' ? '前' : '後');
-      if (state.levelIdx === 0) {
+      if (state.levelIdx === 0 && pack.key === 'easy') {
         state.coachSeen = true;
-        showCoach(state.program.length ? '好！而家撳黃色「走」' : '');
+        showCoach(state.program.length ? '好！撳黃色「走」' : '');
       }
     }
 
@@ -819,7 +974,7 @@
     }
 
     function starCount() {
-      const min = LEVELS[state.levelIdx].min;
+      const min = getLevels()[state.levelIdx].min;
       const n = state.program.length;
       if (n <= min) return 3;
       if (n <= min + 1) return 2;
@@ -834,7 +989,7 @@
       if (state.running || state.status !== 'play') return;
       unlockAudio();
       if (state.program.length === 0) {
-        toast('先撳「前」或「後」');
+        toast('先撳方向掣');
         speak('先揀方向');
         SFX.fail();
         return;
@@ -845,7 +1000,7 @@
       setControlsEnabled(false);
       SFX.go();
 
-      const L = LEVELS[state.levelIdx];
+      const L = getLevels()[state.levelIdx];
       state.pos = L.start;
       state.facing = L.facing;
       state.visited = [L.start];
@@ -859,7 +1014,6 @@
         await sleep(280);
         const res = stepOnce(cmd);
         if (res === 'fail') {
-          // mark edge cell shake
           renderGrid(false);
           const cells = gridEl.children;
           const edge = state.pos;
@@ -900,14 +1054,18 @@
     function onWin() {
       const t = THEMES[state.theme];
       const s = state.stars;
+      const levels = getLevels();
       $('win-stars').textContent = '★'.repeat(s) + '☆'.repeat(3 - s);
       $('win-title').textContent = s === 3 ? '完美！' : '成功！';
       $('win-msg').textContent = t.win;
-      const isLast = state.levelIdx >= LEVELS.length - 1;
+      const isLast = state.levelIdx >= levels.length - 1;
       $('btn-next').textContent = isLast ? '完成' : '下一關';
+      if (isLast) {
+        $('done-msg').textContent = getPack().label + '級 · ' + levels.length + ' 關全部通過';
+      }
       setOverlays(isLast ? 'done' : 'win');
       SFX.win();
-      if (isLast) speak('中秋完成');
+      if (isLast) speak(getPack().label + '級完成');
       else speak('成功');
       confettiBurst();
     }
@@ -928,21 +1086,39 @@
       }
     }
 
-    function startTheme(theme) {
+    function goDiffScreen(theme) {
       unlockAudio();
       state.theme = theme;
-      state.coachSeen = false;
       try { localStorage.setItem('madc_theme', theme); } catch (_) {}
+      $('diff-theme-label').textContent = THEMES[theme].name + ' · 中秋送月餅';
+      showScreen('diff');
+      SFX.tap();
+      speak(THEMES[theme].name + '，揀難度');
+    }
+
+    function startDiff(diff) {
+      unlockAudio();
+      state.diff = diff;
+      state.coachSeen = false;
+      try { localStorage.setItem('madc_diff', diff); } catch (_) {}
       showScreen('play');
+      applyDiffUI();
       loadLevel(0, false);
       SFX.tap();
-      speak(THEMES[theme].name + '，開始');
+      speak(getPack().label + '級，開始');
     }
 
     /* events */
     document.querySelectorAll('.theme-card').forEach(btn => {
-      btn.addEventListener('click', () => startTheme(btn.getAttribute('data-theme')));
+      btn.addEventListener('click', () => goDiffScreen(btn.getAttribute('data-theme')));
     });
+    document.querySelectorAll('.diff-card').forEach(btn => {
+      btn.addEventListener('click', () => startDiff(btn.getAttribute('data-diff')));
+    });
+    $('btn-diff-back').onclick = () => {
+      showScreen('home');
+      SFX.tap();
+    };
     $('btn-f').onclick = () => addCmd('F');
     $('btn-b').onclick = () => addCmd('B');
     $('btn-go').onclick = () => runProgram();
@@ -956,7 +1132,8 @@
     $('btn-win-home').onclick = () => $('btn-home').click();
     $('btn-done-home').onclick = () => $('btn-home').click();
     $('btn-next').onclick = () => {
-      if (state.levelIdx >= LEVELS.length - 1) {
+      const levels = getLevels();
+      if (state.levelIdx >= levels.length - 1) {
         setOverlays('done');
         return;
       }
@@ -965,7 +1142,6 @@
       speak('下一關');
     };
     $('btn-again').onclick = () => { state.coachSeen = false; loadLevel(0, false); };
-    // 再試：保留程式，只重設位置
     $('btn-retry').onclick = () => {
       setOverlays(null);
       loadLevel(state.levelIdx, true);
@@ -979,8 +1155,8 @@
     };
     $('btn-speak').onclick = () => {
       unlockAudio();
-      const L = LEVELS[state.levelIdx];
-      speak(THEMES[state.theme].name + '。' + L.hint + '。終點係' + THEMES[state.theme].goalName);
+      const L = getLevels()[state.levelIdx];
+      speak(THEMES[state.theme].name + '。' + getPack().label + '級。' + L.hint + '。終點係' + THEMES[state.theme].goalName);
       SFX.tap();
     };
     $('sw-neko').onclick = () => {
@@ -1000,38 +1176,46 @@
       SFX.tap();
     };
 
-    const tLevel = $('t-level');
-    LEVELS.forEach((L, i) => {
-      const o = document.createElement('option');
-      o.value = String(i);
-      o.textContent = '關 ' + L.id + ' · ' + L.hint;
-      tLevel.appendChild(o);
-    });
     $('btn-teacher').onclick = () => {
       $('teacher-panel').classList.toggle('on');
-      tLevel.value = String(state.levelIdx);
+      $('t-level').value = String(state.levelIdx);
       $('t-voice').value = state.voice ? '1' : '0';
       $('t-sfx').value = state.sfx ? '1' : '0';
+      if ($('t-diff')) $('t-diff').value = state.diff;
     };
     $('t-close').onclick = () => $('teacher-panel').classList.remove('on');
-    tLevel.onchange = () => loadLevel(parseInt(tLevel.value, 10) || 0, false);
+    $('t-level').onchange = () => loadLevel(parseInt($('t-level').value, 10) || 0, false);
     $('t-voice').onchange = () => { state.voice = $('t-voice').value === '1'; };
     $('t-sfx').onchange = () => { state.sfx = $('t-sfx').value === '1'; };
+    $('t-diff').onchange = () => {
+      state.diff = $('t-diff').value;
+      state.coachSeen = false;
+      applyDiffUI();
+      loadLevel(0, false);
+    };
     $('t-reset').onclick = () => loadLevel(state.levelIdx, false);
 
     try {
       const th = localStorage.getItem('madc_theme');
       if (th === 'neko' || th === 'mario') state.theme = th;
+      const df = localStorage.getItem('madc_diff');
+      if (df === 'easy' || df === 'mid' || df === 'hard') state.diff = df;
     } catch (_) {}
 
     if (window.speechSynthesis) {
       window.speechSynthesis.onvoiceschanged = function () {};
     }
 
+    // init teacher options for default pack
+    applyDiffUI();
+
     window.DirCoding = {
-      LEVELS, state, stepOnce, deltaFor, loadLevel, addCmd, characterSVG, finalResult, starCount,
+      PACKS,
+      get LEVELS() { return getLevels(); },
+      state, stepOnce, deltaFor, loadLevel, addCmd, characterSVG, finalResult, starCount, getPack, getLevels,
+      setDiff(d) { state.diff = d; applyDiffUI(); },
       simulate(cmds) {
-        const L = LEVELS[state.levelIdx];
+        const L = getLevels()[state.levelIdx];
         state.pos = L.start; state.facing = L.facing; state.status = 'play';
         for (const c of cmds) {
           const last = stepOnce(c);

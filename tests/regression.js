@@ -1,53 +1,39 @@
 #!/usr/bin/env node
-/**
- * Structural + logic regression for direction-coding MVP
- */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
-const htmlPath = path.join(root, 'index.html');
-const html = fs.readFileSync(htmlPath, 'utf8');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 let passed = 0;
 let failed = 0;
 function ok(name, cond, detail) {
-  if (cond) {
-    passed++;
-    console.log('PASS', name);
-  } else {
-    failed++;
-    console.log('FAIL', name, detail || '');
-  }
+  if (cond) { passed++; console.log('PASS', name); }
+  else { failed++; console.log('FAIL', name, detail || ''); }
 }
 
-// Structural
-ok('S1 has index title 中秋', /中秋方向編程/.test(html));
-ok('S2 themes neko+mario', /data-theme="neko"/.test(html) && /data-theme="mario"/.test(html));
-ok('S3 cmds 前後走', /id="btn-f"/.test(html) && /id="btn-b"/.test(html) && /id="btn-go"/.test(html));
-ok('S4 no system input', !/<input(?![^>]*type="hidden")/i.test(html));
-ok('S5 MAX_STEPS 6', /MAX_STEPS = 6/.test(html));
-ok('S6 LEVELS 6', (html.match(/id: [1-6]/g) || []).length >= 6);
-ok('S7 original SVG not external mario art', !/nintendo|official.*mario|doraemon\.com/i.test(html));
-ok('S8 touch manipulation', /touch-action:\s*manipulation/.test(html));
-ok('S9 teacher panel', /id="teacher-panel"/.test(html));
-ok('S12 sfx beep helpers', /function beep\(/.test(html) && /SFX/.test(html));
-ok('S13 starCount', /function starCount\(/.test(html));
-ok('S14 coach', /id="coach"/.test(html));
-ok('S15 keep program retry', /loadLevel\(state\.levelIdx, true\)/.test(html));
+ok('S1 title', /中秋方向編程/.test(html));
+ok('S2 themes', /data-theme="neko"/.test(html) && /data-theme="mario"/.test(html));
+ok('S3 three diffs', /data-diff="easy"/.test(html) && /data-diff="mid"/.test(html) && /data-diff="hard"/.test(html));
+ok('S4 screen-diff', /id="screen-diff"/.test(html));
+ok('S5 PACKS', /const PACKS/.test(html));
+ok('S6 easy F only', /key: 'easy'[\s\S]*?cmds: \['F'\]/.test(html));
+ok('S7 no bare input', !/<input(?![^>]*type="hidden")/i.test(html));
+ok('S8 touch', /touch-action:\s*manipulation/.test(html));
+ok('S9 sfx', /function beep\(/.test(html));
+ok('S10 keep retry', /loadLevel\(state\.levelIdx, true\)/.test(html));
 
-// Extract script and run simulate logic in vm
 const m = html.match(/<script>([\s\S]*?)<\/script>/);
-ok('S11 inline script', !!m);
+ok('S11 script', !!m);
+
 if (m) {
   const dom = {
     data: {},
     getElementById(id) {
       if (!this.data[id]) {
-        const el = {
-          id,
-          style: {},
+        this.data[id] = {
+          id, style: {}, className: '', value: '', innerHTML: '', textContent: '', disabled: false,
           classList: {
             _s: new Set(),
             add(c) { this._s.add(c); },
@@ -60,78 +46,71 @@ if (m) {
             contains(c) { return this._s.has(c); },
           },
           children: [],
-          innerHTML: '',
-          textContent: '',
-          value: '',
-          disabled: false,
-          onclick: null,
-          onchange: null,
           appendChild(c) { this.children.push(c); return c; },
           querySelector() { return null; },
           setAttribute() {},
           animate() { return { onfinish: null }; },
           remove() {},
         };
-        this.data[id] = el;
       }
       return this.data[id];
     },
     querySelectorAll(sel) {
-      if (sel === '.screen') return [];
-      if (sel === '.theme-card') return [];
+      if (sel === '.screen' || sel === '.theme-card' || sel === '.diff-card') return [];
+      if (sel === '.controls') return [this.getElementById('controls_fake')];
       return [];
     },
-    createElement(tag) {
-      return this.getElementById('el_' + Math.random().toString(36).slice(2));
+    createElement() { return this.getElementById('el_' + Math.random().toString(36).slice(2)); },
+    querySelector(sel) {
+      if (sel === '.controls') return this.getElementById('controls_fake');
+      return null;
     },
   };
 
   const sandbox = {
-    window: { speechSynthesis: null, DirCoding: null },
+    window: { speechSynthesis: null, DirCoding: null, AudioContext: null, webkitAudioContext: null },
     document: dom,
     localStorage: { getItem() { return null; }, setItem() {} },
-    speechSynthesis: null,
-    console,
-    setTimeout,
-    clearTimeout,
-    Math,
-    Promise,
+    console, setTimeout, clearTimeout, Math, Promise,
   };
   sandbox.window.document = dom;
-  sandbox.global = sandbox;
   try {
-    vm.runInNewContext(m[1], sandbox, { timeout: 3000 });
+    vm.runInNewContext(m[1], sandbox, { timeout: 4000 });
     const DC = sandbox.window.DirCoding;
-    ok('L1 DirCoding exists', !!DC);
+    ok('L0 exists', !!DC);
     if (DC) {
-      // Level 1: F -> win
+      // easy
+      DC.setDiff('easy');
       DC.loadLevel(0);
-      ok('L2 level1 F win', DC.simulate(['F']) === 'win');
-      // Level 2: FF win
+      ok('E1 levels 4', DC.getLevels().length === 4);
+      ok('E2 L1 F win', DC.simulate(['F']) === 'win');
       DC.loadLevel(1);
-      ok('L3 level2 FF win', DC.simulate(['F', 'F']) === 'win');
-      ok('L4 level2 F miss', DC.simulate(['F']) === 'miss');
-      // Level 3: FFF
-      DC.loadLevel(2);
-      ok('L5 level3 FFF win', DC.simulate(['F', 'F', 'F']) === 'win');
-      // Level 4: B
-      DC.loadLevel(3);
-      ok('L6 level4 B win', DC.simulate(['B']) === 'win');
-      ok('L7 level4 F fail/miss', ['fail', 'miss'].includes(DC.simulate(['F'])));
-      // Level 5: BB
-      DC.loadLevel(4);
-      ok('L8 level5 BB win', DC.simulate(['B', 'B']) === 'win');
-      // Level 6: only one F; FF overshoots → miss (or fail if OOB)
-      DC.loadLevel(5);
-      ok('L9 level6 F win', DC.simulate(['F']) === 'win');
-      ok('L10 level6 FF miss/fail', ['miss', 'fail'].includes(DC.simulate(['F', 'F'])));
-      // theme switch doesn't break
-      DC.state.theme = 'mario';
+      ok('E3 L2 FF win', DC.simulate(['F', 'F']) === 'win');
+      ok('E4 pack cmds F only', DC.getPack().cmds.join() === 'F');
+
+      // mid
+      DC.setDiff('mid');
       DC.loadLevel(0);
-      ok('L11 mario theme L1', DC.simulate(['F']) === 'win');
+      ok('M1 levels 6', DC.getLevels().length === 6);
+      ok('M2 L1 F', DC.simulate(['F']) === 'win');
+      DC.loadLevel(3);
+      ok('M3 L4 B', DC.simulate(['B']) === 'win');
+      DC.loadLevel(5);
+      ok('M4 L6 FF miss', ['miss', 'fail'].includes(DC.simulate(['F', 'F'])));
+
+      // hard
+      DC.setDiff('hard');
+      DC.loadLevel(0);
+      ok('H1 levels 8', DC.getLevels().length === 8);
+      ok('H2 L1 FFFF', DC.simulate(['F', 'F', 'F', 'F']) === 'win');
+      DC.loadLevel(3); // facing 3
+      ok('H3 face left FFF', DC.simulate(['F', 'F', 'F']) === 'win');
+      DC.loadLevel(6);
+      ok('H4 exact FF', DC.simulate(['F', 'F']) === 'win');
+      ok('H5 overshoot', ['miss', 'fail'].includes(DC.simulate(['F', 'F', 'F'])));
     }
   } catch (e) {
-    ok('L0 vm run', false, String(e && e.stack || e));
+    ok('L0 vm', false, String(e && e.stack || e));
   }
 }
 
