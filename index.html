@@ -5,241 +5,353 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0c1230" />
   <title>中秋方向編程 · 前與後</title>
   <style>
     :root {
-      --bg1: #0b1026;
-      --bg2: #1a1440;
-      --card: #1e2a5a;
       --ink: #fff8e7;
-      --muted: #c9b8ff;
-      --accent: #ffd76a;
+      --muted: #d4c4ff;
+      --gold: #ffd76a;
+      --gold-deep: #e8a317;
       --ok: #3ddc97;
-      --bad: #ff6b6b;
-      --btn: #5b7cfa;
-      --btn2: #ff8fab;
-      --go: #ffb703;
-      --cell: #2a3670;
-      --wall: #151b38;
-      --path: #3d4a8c;
-      --r: 18px;
-      --touch: 72px;
-      --fs: 1.15rem;
+      --bad: #ff6b7a;
+      --path: #3a4a8f;
+      --path-edge: #5a6ec4;
+      --touch: 76px;
+      --r: 20px;
+      --shadow: 0 10px 28px rgba(0,0,0,.35);
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       margin: 0; height: 100%;
-      font-family: "PingFang HK", "Noto Sans TC", "Helvetica Neue", sans-serif;
-      background: radial-gradient(ellipse at 70% 10%, #3a2a6a 0%, var(--bg1) 45%, #070b1a 100%);
+      font-family: "PingFang HK", "Noto Sans TC", "Helvetica Neue", system-ui, sans-serif;
       color: var(--ink);
+      background: #0a0f28;
       overflow: hidden;
       touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
+      user-select: none; -webkit-user-select: none;
     }
+    body {
+      background:
+        radial-gradient(ellipse 80% 50% at 75% -10%, #5a3a8a 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 10% 100%, #1a3a5a 0%, transparent 50%),
+        linear-gradient(165deg, #12183a 0%, #0a0f28 50%, #070b1c 100%);
+    }
+    /* stars */
     body::before {
-      content: "";
-      position: fixed; inset: 0; pointer-events: none; opacity: .35;
+      content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .45; z-index: 0;
       background-image:
-        radial-gradient(2px 2px at 10% 20%, #fff 50%, transparent 51%),
-        radial-gradient(2px 2px at 30% 70%, #fff 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 70% 30%, #fff 50%, transparent 51%),
-        radial-gradient(2px 2px at 85% 60%, #fff 50%, transparent 51%),
-        radial-gradient(1px 1px at 50% 50%, #fff 50%, transparent 51%);
+        radial-gradient(1.5px 1.5px at 8% 18%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 22% 42%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 48% 12%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 70% 28%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 88% 55%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 35% 78%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 60% 88%, #fff 50%, transparent 51%);
     }
-    #app { height: 100dvh; display: flex; flex-direction: column; max-width: 1100px; margin: 0 auto; padding: 10px 12px 12px; gap: 10px; position: relative; z-index: 1; }
-
-    /* screens */
+    #app {
+      position: relative; z-index: 1;
+      height: 100dvh; max-width: 1080px; margin: 0 auto;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0));
+      display: flex; flex-direction: column; gap: 10px;
+    }
     .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
     .screen.on { display: flex; }
 
-    /* home */
-    .home-hero { text-align: center; padding: 8px 8px 4px; }
+    /* —— HOME —— */
+    .home-hero { text-align: center; padding: 4px 0 2px; flex-shrink: 0; }
+    .moon-wrap { position: relative; width: 96px; height: 96px; margin: 0 auto 6px; }
     .moon {
-      width: 88px; height: 88px; margin: 0 auto 8px; border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #fff7c2, #ffd76a 55%, #e8a317);
-      box-shadow: 0 0 40px rgba(255, 215, 106, .55), inset -10px -8px 0 rgba(0,0,0,.08);
+      width: 96px; height: 96px; border-radius: 50%;
+      background: radial-gradient(circle at 32% 30%, #fff9d6, #ffd76a 52%, #e09a14);
+      box-shadow: 0 0 0 6px rgba(255,215,106,.12), 0 0 48px rgba(255,215,106,.5);
+      animation: moonPulse 3.2s ease-in-out infinite;
     }
-    h1 { margin: 0; font-size: clamp(1.4rem, 4vw, 2rem); letter-spacing: .04em; }
-    .sub { color: var(--muted); margin: 6px 0 14px; font-size: .95rem; }
-    .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0; align-content: center; }
+    .moon-rabbit {
+      position: absolute; right: -6px; bottom: 4px; font-size: 1.6rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+    }
+    @keyframes moonPulse {
+      0%,100% { box-shadow: 0 0 0 6px rgba(255,215,106,.12), 0 0 40px rgba(255,215,106,.45); }
+      50% { box-shadow: 0 0 0 10px rgba(255,215,106,.18), 0 0 56px rgba(255,215,106,.65); }
+    }
+    h1 { margin: 0; font-size: clamp(1.45rem, 4.2vw, 2rem); font-weight: 900; letter-spacing: .03em; }
+    .sub { margin: 6px 0 0; color: var(--muted); font-size: 1rem; font-weight: 600; }
+    .theme-grid {
+      flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      align-content: center; padding: 8px 0 4px;
+    }
     .theme-card {
-      border: 3px solid rgba(255,255,255,.18);
-      background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(0,0,0,.15));
-      border-radius: 22px; padding: 16px 12px; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-      min-height: 160px; transition: transform .12s, border-color .12s, box-shadow .12s;
+      border: 3px solid rgba(255,255,255,.2);
+      background: linear-gradient(165deg, rgba(255,255,255,.14), rgba(0,0,0,.22));
+      border-radius: 24px; padding: 18px 12px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      min-height: 180px; box-shadow: var(--shadow);
+      transition: transform .12s ease, border-color .12s;
     }
     .theme-card:active { transform: scale(.97); }
-    .theme-card.neko { border-color: #6ecbff; box-shadow: 0 8px 24px rgba(80,180,255,.25); }
-    .theme-card.mario { border-color: #ff6b6b; box-shadow: 0 8px 24px rgba(255,80,80,.22); }
-    .theme-card .art { width: 96px; height: 96px; }
-    .theme-card .name { font-size: 1.25rem; font-weight: 800; }
-    .theme-card .tag { font-size: .85rem; color: var(--accent); }
+    .theme-card.neko { border-color: #7ad0ff; }
+    .theme-card.mario { border-color: #ff7b7b; }
+    .theme-card .art { width: 110px; height: 110px; }
+    .theme-card .art svg { width: 100%; height: 100%; }
+    .theme-card .name { font-size: 1.35rem; font-weight: 900; }
+    .theme-card .tag { font-size: .9rem; color: var(--gold); font-weight: 700; text-align: center; line-height: 1.3; }
+    .home-tip {
+      text-align: center; color: var(--muted); font-size: .88rem; font-weight: 600; padding-bottom: 4px;
+    }
 
-    /* top bar */
+    /* —— PLAY BAR —— */
     .bar {
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-      background: rgba(20, 24, 55, .72); border: 2px solid rgba(255,255,255,.12);
-      border-radius: 16px; padding: 8px 10px;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      background: rgba(16, 20, 48, .78); border: 2px solid rgba(255,255,255,.12);
+      border-radius: 16px; padding: 8px 10px; backdrop-filter: blur(8px);
     }
-    .bar .pill {
+    .pills { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-width: 0; }
+    .pill {
       background: rgba(255,255,255,.1); border-radius: 999px; padding: 6px 12px;
-      font-weight: 700; font-size: var(--fs);
+      font-weight: 800; font-size: 1rem; white-space: nowrap;
     }
+    .pill.hint { background: rgba(255,215,106,.18); color: var(--gold); border: 1px solid rgba(255,215,106,.35); }
+    .dots { display: flex; gap: 5px; margin-left: 4px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.25);
+    }
+    .dot.done { background: var(--ok); border-color: #8af0c0; }
+    .dot.now { background: var(--gold); border-color: #ffe9a8; box-shadow: 0 0 8px rgba(255,215,106,.7); }
     .bar .spacer { flex: 1; }
     .icon-btn {
-      width: 48px; height: 48px; border-radius: 14px; border: 2px solid rgba(255,255,255,.2);
-      background: rgba(255,255,255,.08); color: var(--ink); font-size: 1.25rem; cursor: pointer;
+      width: 46px; height: 46px; border-radius: 14px; border: 2px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08); color: var(--ink); font-size: 1.2rem; cursor: pointer;
+      display: grid; place-items: center; flex-shrink: 0;
     }
-    .icon-btn:active { transform: scale(.95); }
+    .icon-btn:active { transform: scale(.94); }
     .theme-switch {
-      display: flex; gap: 6px; background: rgba(0,0,0,.25); border-radius: 14px; padding: 4px;
+      display: flex; gap: 4px; background: rgba(0,0,0,.28); border-radius: 12px; padding: 3px; flex-shrink: 0;
     }
     .theme-switch button {
       border: 0; border-radius: 10px; padding: 8px 10px; font-weight: 800; cursor: pointer;
-      background: transparent; color: var(--muted); font-size: .9rem;
+      background: transparent; color: var(--muted); font-size: .85rem;
     }
-    .theme-switch button.on { background: var(--accent); color: #1a1200; }
+    .theme-switch button.on { background: var(--gold); color: #1a1200; }
 
-    /* play layout */
+    /* —— BOARD —— */
     .play-main {
       flex: 1; min-height: 0; display: grid;
-      grid-template-rows: 1fr auto auto;
+      grid-template-rows: minmax(140px, 1fr) auto auto;
       gap: 10px;
     }
     .board-wrap {
-      display: flex; align-items: center; justify-content: center; min-height: 0;
-      background: rgba(10,14,36,.55); border: 2px solid rgba(255,255,255,.1);
-      border-radius: 20px; padding: 10px; position: relative; overflow: hidden;
-    }
-    .board-wrap .lanterns {
-      position: absolute; inset: 0; pointer-events: none; opacity: .5;
+      position: relative; min-height: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
       background:
-        radial-gradient(circle at 8% 20%, rgba(255,120,80,.35), transparent 18%),
-        radial-gradient(circle at 92% 25%, rgba(255,80,80,.3), transparent 16%);
+        radial-gradient(circle at 12% 18%, rgba(255,120,60,.28), transparent 22%),
+        radial-gradient(circle at 90% 22%, rgba(255,70,70,.22), transparent 20%),
+        rgba(8,12,32,.62);
+      border: 2px solid rgba(255,255,255,.12);
+      border-radius: 22px; padding: 12px 14px;
+      box-shadow: inset 0 0 40px rgba(0,0,0,.25);
     }
+    .lantern {
+      position: absolute; top: 10px; width: 28px; height: 36px; border-radius: 8px 8px 12px 12px;
+      background: linear-gradient(180deg, #ffb347, #e85d04); opacity: .85;
+      box-shadow: 0 0 18px rgba(255,140,60,.55);
+    }
+    .lantern::after {
+      content: ""; position: absolute; left: 50%; top: -8px; width: 2px; height: 10px;
+      background: rgba(255,255,255,.5); transform: translateX(-50%);
+    }
+    .lantern.l { left: 14px; }
+    .lantern.r { right: 14px; background: linear-gradient(180deg, #ff8fab, #e03131); }
+
     .grid {
-      display: grid; gap: 6px; width: min(92vw, 520px);
+      display: grid; gap: 8px; width: min(94vw, 560px); z-index: 1;
     }
     .cell {
-      aspect-ratio: 1; border-radius: 12px; background: var(--cell);
-      border: 2px solid rgba(255,255,255,.08);
+      aspect-ratio: 1; border-radius: 16px;
+      background: linear-gradient(160deg, #4a5cb0, var(--path));
+      border: 2px solid var(--path-edge);
       display: flex; align-items: center; justify-content: center;
-      position: relative; transition: background .15s, box-shadow .15s;
+      position: relative;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 4px 0 rgba(0,0,0,.2);
+      transition: box-shadow .2s, transform .2s;
     }
-    .cell.wall { background: var(--wall); opacity: .45; }
-    .cell.path { background: var(--path); }
-    .cell.start-glow { box-shadow: inset 0 0 0 3px rgba(255,215,106,.35); }
-    .cell.goal-glow { box-shadow: inset 0 0 0 3px rgba(61,220,151,.45); }
-    .cell.here { box-shadow: 0 0 0 3px var(--accent), 0 0 18px rgba(255,215,106,.4); }
-    .sprite { width: 78%; height: 78%; display: block; filter: drop-shadow(0 4px 4px rgba(0,0,0,.35)); transition: transform .25s ease; }
-    .sprite.face-0 { transform: rotate(0deg); }
-    .sprite.face-1 { transform: rotate(90deg); }
-    .sprite.face-2 { transform: rotate(180deg); }
-    .sprite.face-3 { transform: rotate(-90deg); }
-    .goal-icon { width: 70%; height: 70%; }
+    .cell.start-glow { box-shadow: inset 0 0 0 3px rgba(255,215,106,.4), 0 4px 0 rgba(0,0,0,.2); }
+    .cell.goal-glow {
+      box-shadow: inset 0 0 0 3px rgba(61,220,151,.55), 0 0 16px rgba(61,220,151,.25), 0 4px 0 rgba(0,0,0,.2);
+      animation: goalPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes goalPulse {
+      0%,100% { filter: brightness(1); }
+      50% { filter: brightness(1.12); }
+    }
+    .cell.here { z-index: 2; }
+    .cell.visited { background: linear-gradient(160deg, #5a6ec4, #3d4e9a); }
+    .cell.boom { animation: shake .4s ease; background: #8b3a4a; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
 
-    /* program strip */
+    .actor {
+      width: 82%; height: 82%; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .actor svg { width: 100%; height: 100%; filter: drop-shadow(0 5px 4px rgba(0,0,0,.35)); }
+    .actor.hop { animation: hop .42s ease; }
+    @keyframes hop {
+      0% { transform: translateY(0) scale(1); }
+      40% { transform: translateY(-14px) scale(1.06); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    .face-arrow {
+      position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 8px solid transparent; border-right: 8px solid transparent;
+      border-top: 12px solid var(--gold);
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
+    }
+    /* facing: 1=E point right, 3=W point left — on 1D we use rotate */
+    .face-arrow.f1 { transform: translateX(-50%) rotate(-90deg); bottom: 8px; left: auto; right: -2px; }
+    .face-arrow.f3 { transform: translateX(-50%) rotate(90deg); bottom: 8px; left: 10px; }
+    .face-arrow.f0 { transform: translateX(-50%) rotate(180deg); top: -2px; bottom: auto; }
+    .face-arrow.f2 { transform: translateX(-50%) rotate(0deg); }
+
+    .goal-icon { width: 72%; height: 72%; animation: floaty 2s ease-in-out infinite; }
+    @keyframes floaty {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* —— PROGRAM —— */
     .program-box {
-      background: rgba(20,24,55,.8); border: 2px solid rgba(255,255,255,.12);
-      border-radius: 16px; padding: 10px;
+      background: rgba(16,20,48,.88); border: 2px solid rgba(255,255,255,.12);
+      border-radius: 16px; padding: 10px 12px; flex-shrink: 0;
     }
-    .program-label { font-size: .85rem; color: var(--muted); margin-bottom: 6px; font-weight: 700; }
-    .program-row { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
+    .program-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;
+    }
+    .program-label { font-size: .9rem; color: var(--muted); font-weight: 800; }
+    .step-count { font-size: .85rem; color: var(--gold); font-weight: 800; }
+    .program-row { display: flex; gap: 8px; align-items: center; overflow-x: auto; padding-bottom: 2px; }
     .slot {
-      min-width: 52px; height: 52px; border-radius: 12px;
-      border: 2px dashed rgba(255,255,255,.25); background: rgba(0,0,0,.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; font-weight: 900; flex-shrink: 0;
+      min-width: 54px; height: 54px; border-radius: 14px;
+      border: 2px dashed rgba(255,255,255,.28); background: rgba(0,0,0,.25);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 900; flex-shrink: 0; gap: 0; line-height: 1.05;
     }
-    .slot.filled-F { background: #3d6bff; border-style: solid; border-color: #9bb6ff; }
-    .slot.filled-B { background: #c44b7a; border-style: solid; border-color: #ffb0cb; }
-    .slot.exec { outline: 3px solid var(--accent); transform: scale(1.06); }
-    .mini-tools { display: flex; gap: 6px; margin-left: auto; }
+    .slot .g { font-size: 1.15rem; }
+    .slot .t { font-size: .72rem; opacity: .95; }
+    .slot.filled-F { background: linear-gradient(180deg,#5b7cff,#2f4fd0); border-style: solid; border-color: #a8bcff; color: #fff; }
+    .slot.filled-B { background: linear-gradient(180deg,#ff8ab0,#d6336c); border-style: solid; border-color: #ffc9dc; color: #fff; }
+    .slot.exec { outline: 3px solid var(--gold); transform: scale(1.08); box-shadow: 0 0 12px rgba(255,215,106,.45); }
+    .mini-tools { display: flex; gap: 6px; margin-left: 4px; flex-shrink: 0; }
     .mini-tools button {
-      height: 48px; min-width: 48px; border-radius: 12px; border: 2px solid rgba(255,255,255,.2);
-      background: rgba(255,255,255,.08); color: var(--ink); font-weight: 800; font-size: 1rem; cursor: pointer; padding: 0 12px;
+      height: 50px; min-width: 50px; border-radius: 14px; border: 2px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.1); color: var(--ink); font-weight: 900; font-size: 1rem;
+      cursor: pointer; padding: 0 12px;
     }
+    .mini-tools button:active { transform: scale(.96); }
 
-    /* controls */
+    /* —— CONTROLS —— */
     .controls {
-      display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 10px;
+      display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 10px; flex-shrink: 0;
     }
     .big-btn {
-      min-height: var(--touch); border-radius: 18px; border: 3px solid rgba(255,255,255,.2);
-      font-size: clamp(1.2rem, 3.5vw, 1.6rem); font-weight: 900; cursor: pointer;
+      min-height: var(--touch); border-radius: 20px; border: 3px solid rgba(255,255,255,.22);
+      font-size: clamp(1.15rem, 3.2vw, 1.5rem); font-weight: 900; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-      box-shadow: 0 6px 0 rgba(0,0,0,.25); transition: transform .08s, filter .08s;
+      box-shadow: 0 7px 0 rgba(0,0,0,.28); transition: transform .08s, box-shadow .08s, filter .1s;
     }
-    .big-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
-    .big-btn:disabled { filter: grayscale(.4) brightness(.7); cursor: not-allowed; }
-    .big-btn .glyph { font-size: 1.5em; line-height: 1; }
-    .btn-f { background: linear-gradient(180deg, #6e8fff, #3b5bdb); color: white; }
-    .btn-b { background: linear-gradient(180deg, #ff9ec0, #e64980); color: white; }
+    .big-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 3px 0 rgba(0,0,0,.28); }
+    .big-btn:disabled { filter: grayscale(.45) brightness(.72); cursor: not-allowed; }
+    .big-btn .glyph { font-size: 1.55em; line-height: 1; }
+    .btn-f { background: linear-gradient(180deg, #7b96ff, #3b5bdb); color: #fff; }
+    .btn-b { background: linear-gradient(180deg, #ff9ec0, #e03161); color: #fff; }
     .btn-go { background: linear-gradient(180deg, #ffe066, #f59f00); color: #2b1d00; border-color: #ffe8a3; }
-    .btn-go.running { background: linear-gradient(180deg, #adb5bd, #868e96); color: #111; }
+    .btn-go.running { background: linear-gradient(180deg, #ced4da, #868e96); color: #111; border-color: #adb5bd; }
 
-    /* overlays */
+    /* —— OVERLAYS —— */
     .overlay {
       position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
-      background: rgba(5,8,20,.72); z-index: 20; border-radius: 20px; padding: 16px;
+      background: rgba(4,8,20,.76); z-index: 20; border-radius: 22px; padding: 16px;
+      backdrop-filter: blur(3px);
     }
     .overlay.on { display: flex; }
     .modal {
-      background: linear-gradient(165deg, #2a2158, #12182f);
-      border: 3px solid var(--accent); border-radius: 22px; padding: 22px 18px; text-align: center;
-      width: min(92%, 380px); box-shadow: 0 20px 50px rgba(0,0,0,.45);
+      background: linear-gradient(165deg, #2e2460, #12182f);
+      border: 3px solid var(--gold); border-radius: 24px; padding: 22px 18px; text-align: center;
+      width: min(94%, 400px); box-shadow: 0 24px 50px rgba(0,0,0,.5);
+      animation: popIn .28s ease;
     }
-    .modal h2 { margin: 0 0 8px; font-size: 1.6rem; }
-    .modal p { margin: 0 0 16px; color: var(--muted); }
+    @keyframes popIn {
+      from { transform: scale(.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal h2 { margin: 0 0 6px; font-size: 1.7rem; font-weight: 900; }
+    .modal p { margin: 0 0 12px; color: var(--muted); font-size: 1.05rem; font-weight: 600; }
+    .stars { font-size: 1.8rem; letter-spacing: .15em; margin-bottom: 10px; color: var(--gold); }
     .modal .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .modal button {
-      min-height: 52px; min-width: 120px; border-radius: 14px; border: 0; font-weight: 900;
+      min-height: 54px; min-width: 124px; border-radius: 16px; border: 0; font-weight: 900;
       font-size: 1.1rem; padding: 0 16px; cursor: pointer;
     }
     .m-ok { background: var(--ok); color: #062616; }
-    .m-retry { background: var(--btn); color: white; }
-    .m-home { background: rgba(255,255,255,.12); color: white; border: 2px solid rgba(255,255,255,.2) !important; }
+    .m-retry { background: #5b7cfa; color: #fff; }
+    .m-home { background: rgba(255,255,255,.12); color: #fff; border: 2px solid rgba(255,255,255,.25) !important; }
+
+    /* coach */
+    .coach {
+      position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+      background: rgba(20,16,48,.92); border: 2px solid var(--gold); border-radius: 16px;
+      padding: 10px 14px; font-weight: 800; font-size: .95rem; z-index: 8;
+      max-width: 90%; text-align: center; box-shadow: var(--shadow);
+      display: none;
+    }
+    .coach.on { display: block; animation: popIn .25s ease; }
 
     /* teacher */
     .teacher {
-      display: none; position: absolute; right: 12px; top: 62px; z-index: 30;
-      background: #12182f; border: 2px solid rgba(255,255,255,.2); border-radius: 14px;
-      padding: 12px; width: min(280px, 90vw); box-shadow: 0 12px 30px rgba(0,0,0,.4);
+      display: none; position: absolute; right: 12px; top: 58px; z-index: 30;
+      background: #12182f; border: 2px solid rgba(255,255,255,.22); border-radius: 14px;
+      padding: 12px; width: min(280px, 88vw); box-shadow: var(--shadow);
     }
     .teacher.on { display: block; }
-    .teacher label { display: block; font-size: .85rem; color: var(--muted); margin: 8px 0 4px; }
+    .teacher label { display: block; font-size: .85rem; color: var(--muted); margin: 8px 0 4px; font-weight: 700; }
     .teacher select, .teacher button {
-      width: 100%; min-height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2);
-      background: #1e2748; color: white; font-size: 1rem; padding: 6px 8px;
+      width: 100%; min-height: 42px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2);
+      background: #1e2748; color: #fff; font-size: 1rem; padding: 6px 8px;
     }
-    .teacher button { margin-top: 8px; background: var(--btn); border: 0; font-weight: 700; cursor: pointer; }
+    .teacher button { margin-top: 8px; background: #5b7cfa; border: 0; font-weight: 800; cursor: pointer; }
 
     .toast {
-      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(120%);
-      background: rgba(20,20,40,.95); color: white; padding: 10px 18px; border-radius: 999px;
-      border: 2px solid var(--accent); font-weight: 800; z-index: 50; transition: transform .2s;
-      pointer-events: none;
+      position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(140%);
+      background: rgba(16,16,40,.96); color: #fff; padding: 12px 20px; border-radius: 999px;
+      border: 2px solid var(--gold); font-weight: 900; z-index: 50; transition: transform .22s;
+      pointer-events: none; font-size: 1rem;
     }
     .toast.on { transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 700px) {
-      :root { --touch: 64px; }
-      .theme-card { min-height: 140px; }
-      .slot { min-width: 44px; height: 44px; font-size: 1.15rem; }
+      :root { --touch: 68px; }
+      .theme-card { min-height: 150px; }
+      .theme-switch button { padding: 7px 8px; font-size: .78rem; }
+      .slot { min-width: 48px; height: 48px; }
     }
-    @media (orientation: portrait) and (max-width: 900px) {
-      .play-main { grid-template-rows: minmax(160px, 1fr) auto auto; }
+    @media (prefers-reduced-motion: reduce) {
+      .moon, .goal-icon, .cell.goal-glow, .actor.hop, .modal { animation: none !important; }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- HOME -->
     <section id="screen-home" class="screen on">
       <div class="home-hero">
-        <div class="moon" aria-hidden="true"></div>
+        <div class="moon-wrap">
+          <div class="moon" aria-hidden="true"></div>
+          <span class="moon-rabbit" aria-hidden="true">🐰</span>
+        </div>
         <h1>中秋方向編程</h1>
         <p class="sub">學「前」同「後」· 送月餅到終點</p>
       </div>
@@ -247,29 +359,32 @@
         <button type="button" class="theme-card neko" data-theme="neko" aria-label="選哆啦A夢中秋">
           <div class="art" id="home-neko"></div>
           <div class="name">哆啦A夢</div>
-          <div class="tag">中秋 · 送銅鑼燒月餅</div>
+          <div class="tag">送銅鑼燒月餅</div>
         </button>
         <button type="button" class="theme-card mario" data-theme="mario" aria-label="選瑪利歐中秋">
           <div class="art" id="home-mario"></div>
           <div class="name">瑪利歐</div>
-          <div class="tag">中秋 · 送金幣月餅</div>
+          <div class="tag">送金幣月餅</div>
         </button>
       </div>
+      <p class="home-tip">揀一個角色開始 · 適合 iPad</p>
     </section>
 
-    <!-- PLAY -->
     <section id="screen-play" class="screen">
       <div class="bar">
-        <span class="pill" id="level-pill">關 1/6</span>
-        <span class="pill" id="goal-pill">去終點</span>
+        <div class="pills">
+          <span class="pill" id="level-pill">關 1/6</span>
+          <span class="pill hint" id="goal-pill">行前 1 步</span>
+          <div class="dots" id="level-dots" aria-hidden="true"></div>
+        </div>
         <div class="spacer"></div>
         <div class="theme-switch" role="group" aria-label="主題">
           <button type="button" id="sw-neko" class="on">哆啦A夢</button>
           <button type="button" id="sw-mario">瑪利歐</button>
         </div>
-        <button type="button" class="icon-btn" id="btn-speak" title="讀題">🔊</button>
-        <button type="button" class="icon-btn" id="btn-home" title="主頁">🏠</button>
-        <button type="button" class="icon-btn" id="btn-teacher" title="老師">⚙</button>
+        <button type="button" class="icon-btn" id="btn-speak" title="讀題" aria-label="讀題">🔊</button>
+        <button type="button" class="icon-btn" id="btn-home" title="主頁" aria-label="主頁">🏠</button>
+        <button type="button" class="icon-btn" id="btn-teacher" title="老師" aria-label="老師設定">⚙</button>
       </div>
 
       <div class="teacher" id="teacher-panel">
@@ -277,20 +392,23 @@
         <label>跳關</label>
         <select id="t-level"></select>
         <label>語音</label>
-        <select id="t-voice">
-          <option value="1">開</option>
-          <option value="0">關</option>
-        </select>
+        <select id="t-voice"><option value="1">開</option><option value="0">關</option></select>
+        <label>音效</label>
+        <select id="t-sfx"><option value="1">開</option><option value="0">關</option></select>
         <button type="button" id="t-reset">重設本關</button>
         <button type="button" id="t-close">關閉</button>
       </div>
 
       <div class="play-main">
         <div class="board-wrap" id="board-wrap">
-          <div class="lanterns"></div>
+          <div class="lantern l" aria-hidden="true"></div>
+          <div class="lantern r" aria-hidden="true"></div>
           <div class="grid" id="grid" role="grid" aria-label="地圖"></div>
+          <div class="coach" id="coach"></div>
+
           <div class="overlay" id="overlay-win">
             <div class="modal">
+              <div class="stars" id="win-stars">★★★</div>
               <h2 id="win-title">成功！</h2>
               <p id="win-msg">月餅送到啦</p>
               <div class="row">
@@ -301,15 +419,17 @@
           </div>
           <div class="overlay" id="overlay-fail">
             <div class="modal">
-              <h2>撞到嘢</h2>
-              <p>唔緊要，再試一次</p>
+              <h2 id="fail-title">未成功</h2>
+              <p id="fail-msg">唔緊要，再試一次</p>
               <div class="row">
                 <button type="button" class="m-retry" id="btn-retry">再試</button>
+                <button type="button" class="m-home" id="btn-fail-clear">清空重來</button>
               </div>
             </div>
           </div>
           <div class="overlay" id="overlay-done">
             <div class="modal">
+              <div class="stars">🌕✨</div>
               <h2>中秋完成！</h2>
               <p>6 關方向練習全部通過</p>
               <div class="row">
@@ -321,7 +441,10 @@
         </div>
 
         <div class="program-box">
-          <div class="program-label">我嘅程式（最多 6 步）</div>
+          <div class="program-head">
+            <span class="program-label">我嘅程式</span>
+            <span class="step-count" id="step-count">0 / 6 步</span>
+          </div>
           <div class="program-row" id="program-row"></div>
         </div>
 
@@ -340,33 +463,18 @@
     'use strict';
 
     const MAX_STEPS = 6;
-    const COLS = 5;
-    const ROWS = 1; // visual row of path; rendered as 1x5 strip inside padded look
-    // Use 1-row 5-col path maps for MVP clarity
-
-    /** Levels: positions on 0..4 x-axis, y always 0. facing 1=E or 3=W */
     const LEVELS = [
-      { id: 1, len: 4, start: 0, goal: 1, facing: 1, hint: '行前 1 步' },
-      { id: 2, len: 5, start: 0, goal: 2, facing: 1, hint: '行前 2 步' },
-      { id: 3, len: 5, start: 0, goal: 3, facing: 1, hint: '行前 3 步' },
-      { id: 4, len: 5, start: 3, goal: 2, facing: 1, hint: '行後 1 步' },
-      { id: 5, len: 5, start: 4, goal: 2, facing: 1, hint: '行後 2 步' },
-      { id: 6, len: 3, start: 0, goal: 1, facing: 1, hint: '只行前 1 步（唔好行多）' },
+      { id: 1, len: 4, start: 0, goal: 1, facing: 1, hint: '行前 1 步', min: 1 },
+      { id: 2, len: 5, start: 0, goal: 2, facing: 1, hint: '行前 2 步', min: 2 },
+      { id: 3, len: 5, start: 0, goal: 3, facing: 1, hint: '行前 3 步', min: 3 },
+      { id: 4, len: 5, start: 3, goal: 2, facing: 1, hint: '行後 1 步', min: 1 },
+      { id: 5, len: 5, start: 4, goal: 2, facing: 1, hint: '行後 2 步', min: 2 },
+      { id: 6, len: 3, start: 0, goal: 1, facing: 1, hint: '只行前 1 步', min: 1 },
     ];
 
     const THEMES = {
-      neko: {
-        name: '哆啦A夢',
-        goalName: '銅鑼燒月餅',
-        win: '銅鑼燒月餅送到啦！',
-        color: '#6ecbff',
-      },
-      mario: {
-        name: '瑪利歐',
-        goalName: '金幣月餅',
-        win: '金幣月餅送到啦！',
-        color: '#ff6b6b',
-      },
+      neko: { name: '哆啦A夢', goalName: '銅鑼燒月餅', win: '銅鑼燒月餅送到啦！' },
+      mario: { name: '瑪利歐', goalName: '金幣月餅', win: '金幣月餅送到啦！' },
     };
 
     const state = {
@@ -379,79 +487,121 @@
       program: [],
       running: false,
       voice: true,
-      status: 'play', // play|win|fail|done
+      sfx: true,
+      status: 'play',
+      stars: 3,
+      failReason: '',
+      visited: [],
+      coachSeen: false,
     };
 
     const $ = (id) => document.getElementById(id);
     const gridEl = $('grid');
     const programRow = $('program-row');
 
-    // —— SVG sprites (original geometric, not official IP art) ——
+    /* —— SVG (original geometric) —— */
     function svgNeko() {
-      return `<svg class="sprite" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <ellipse cx="40" cy="48" rx="22" ry="20" fill="#4db3ff"/>
+      return `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="40" cy="50" rx="22" ry="18" fill="#4db3ff"/>
         <circle cx="40" cy="32" r="22" fill="#5bc0ff"/>
-        <circle cx="40" cy="32" r="18" fill="#7dd3ff"/>
-        <ellipse cx="28" cy="14" rx="7" ry="10" fill="#5bc0ff"/>
-        <ellipse cx="52" cy="14" rx="7" ry="10" fill="#5bc0ff"/>
-        <circle cx="33" cy="30" r="4" fill="#1a1a2e"/>
-        <circle cx="47" cy="30" r="4" fill="#1a1a2e"/>
-        <circle cx="34" cy="29" r="1.3" fill="#fff"/>
-        <circle cx="48" cy="29" r="1.3" fill="#fff"/>
-        <ellipse cx="40" cy="38" rx="3" ry="2" fill="#ff7aa2"/>
-        <rect x="34" y="44" width="12" height="8" rx="3" fill="#fff"/>
-        <circle cx="40" cy="48" r="3" fill="#ffd76a" stroke="#e8a317" stroke-width="1"/>
-        <path d="M18 36 Q12 40 16 46" stroke="#5bc0ff" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M62 36 Q68 40 64 46" stroke="#5bc0ff" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <circle cx="40" cy="32" r="17" fill="#8ad9ff"/>
+        <ellipse cx="27" cy="13" rx="7" ry="10" fill="#5bc0ff"/>
+        <ellipse cx="53" cy="13" rx="7" ry="10" fill="#5bc0ff"/>
+        <circle cx="33" cy="30" r="4.2" fill="#1a1a2e"/>
+        <circle cx="47" cy="30" r="4.2" fill="#1a1a2e"/>
+        <circle cx="34.2" cy="28.8" r="1.4" fill="#fff"/>
+        <circle cx="48.2" cy="28.8" r="1.4" fill="#fff"/>
+        <ellipse cx="40" cy="38" rx="3.2" ry="2.2" fill="#ff7aa2"/>
+        <rect x="33" y="45" width="14" height="9" rx="4" fill="#fff"/>
+        <circle cx="40" cy="49.5" r="3.2" fill="#ffd76a" stroke="#e8a317" stroke-width="1.2"/>
+        <path d="M16 38 Q10 42 14 50" stroke="#5bc0ff" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M64 38 Q70 42 66 50" stroke="#5bc0ff" stroke-width="5" fill="none" stroke-linecap="round"/>
       </svg>`;
     }
     function svgMario() {
-      return `<svg class="sprite" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <ellipse cx="40" cy="58" rx="16" ry="10" fill="#2b6cb0"/>
-        <rect x="28" y="40" width="24" height="20" rx="6" fill="#e53e3e"/>
+      return `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="40" cy="60" rx="17" ry="10" fill="#2b6cb0"/>
+        <rect x="27" y="42" width="26" height="20" rx="7" fill="#e53e3e"/>
         <circle cx="40" cy="30" r="16" fill="#f6c29a"/>
-        <path d="M22 24 h36 v8 h-8 v4 h-20 v-4 h-8 z" fill="#e53e3e"/>
-        <rect x="30" y="18" width="20" height="8" rx="2" fill="#e53e3e"/>
-        <circle cx="34" cy="30" r="2.5" fill="#1a1a2e"/>
-        <circle cx="46" cy="30" r="2.5" fill="#1a1a2e"/>
-        <path d="M34 36 q6 4 12 0" stroke="#c05621" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <rect x="24" y="44" width="10" height="8" rx="2" fill="#f6c29a"/>
-        <rect x="46" y="44" width="10" height="8" rx="2" fill="#f6c29a"/>
-        <circle cx="40" cy="48" r="3" fill="#ffd76a"/>
+        <path d="M21 22 h38 v9 h-9 v5 h-20 v-5 h-9 z" fill="#e53e3e"/>
+        <rect x="29" y="16" width="22" height="9" rx="2" fill="#e53e3e"/>
+        <circle cx="34" cy="30" r="2.6" fill="#1a1a2e"/>
+        <circle cx="46" cy="30" r="2.6" fill="#1a1a2e"/>
+        <path d="M34 37 q6 4 12 0" stroke="#c05621" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <rect x="22" y="46" width="11" height="9" rx="2" fill="#f6c29a"/>
+        <rect x="47" y="46" width="11" height="9" rx="2" fill="#f6c29a"/>
+        <circle cx="40" cy="50" r="3.2" fill="#ffd76a"/>
       </svg>`;
     }
     function svgGoal(theme) {
       if (theme === 'mario') {
         return `<svg class="goal-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <ellipse cx="32" cy="36" rx="20" ry="14" fill="#f6e05e" stroke="#d69e2e" stroke-width="2"/>
-          <ellipse cx="32" cy="34" rx="14" ry="8" fill="#feebc8"/>
-          <circle cx="32" cy="34" r="6" fill="#ecc94b" stroke="#b7791f" stroke-width="2"/>
-          <text x="32" y="38" text-anchor="middle" font-size="10" font-weight="bold" fill="#744210">$</text>
-          <path d="M18 22 q14 -16 28 0" stroke="#f6ad55" stroke-width="3" fill="none"/>
+          <ellipse cx="32" cy="38" rx="20" ry="14" fill="#f6e05e" stroke="#d69e2e" stroke-width="2"/>
+          <ellipse cx="32" cy="35" rx="14" ry="8" fill="#feebc8"/>
+          <circle cx="32" cy="35" r="7" fill="#ecc94b" stroke="#b7791f" stroke-width="2"/>
+          <text x="32" y="39" text-anchor="middle" font-size="11" font-weight="bold" fill="#744210">$</text>
         </svg>`;
       }
       return `<svg class="goal-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <ellipse cx="32" cy="38" rx="22" ry="14" fill="#c05621" stroke="#7b341e" stroke-width="2"/>
-        <ellipse cx="32" cy="34" rx="18" ry="11" fill="#ed8936"/>
-        <ellipse cx="32" cy="32" rx="12" ry="7" fill="#fbd38d"/>
-        <circle cx="32" cy="32" r="4" fill="#c05621"/>
-        <path d="M20 20 q12 -14 24 0" stroke="#fc8181" stroke-width="3" fill="none"/>
+        <ellipse cx="32" cy="40" rx="22" ry="14" fill="#c05621" stroke="#7b341e" stroke-width="2"/>
+        <ellipse cx="32" cy="36" rx="18" ry="11" fill="#ed8936"/>
+        <ellipse cx="32" cy="34" rx="12" ry="7" fill="#fbd38d"/>
+        <circle cx="32" cy="34" r="4" fill="#c05621"/>
       </svg>`;
     }
     function characterSVG(theme) {
       return theme === 'mario' ? svgMario() : svgNeko();
     }
 
-    // mount home arts
     $('home-neko').innerHTML = svgNeko();
     $('home-mario').innerHTML = svgMario();
+
+    /* —— SFX (Web Audio) —— */
+    let audioCtx = null;
+    function ensureAudio() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+    function beep(freq, dur, type, vol, when) {
+      if (!state.sfx) return;
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      const t0 = ctx.currentTime + (when || 0);
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol || 0.12, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0 + dur + 0.02);
+    }
+    const SFX = {
+      tap() { beep(520, 0.08, 'triangle', 0.1); },
+      addF() { beep(660, 0.1, 'square', 0.07); },
+      addB() { beep(440, 0.1, 'square', 0.07); },
+      step() { beep(380, 0.09, 'triangle', 0.1); beep(520, 0.08, 'sine', 0.06, 0.05); },
+      win() {
+        beep(523, 0.12, 'sine', 0.1);
+        beep(659, 0.12, 'sine', 0.1, 0.12);
+        beep(784, 0.18, 'sine', 0.12, 0.24);
+        beep(1046, 0.25, 'triangle', 0.1, 0.4);
+      },
+      fail() { beep(220, 0.18, 'sawtooth', 0.08); beep(160, 0.22, 'sawtooth', 0.07, 0.12); },
+      go() { beep(700, 0.1, 'triangle', 0.09); },
+    };
 
     function toast(msg) {
       const t = $('toast');
       t.textContent = msg;
       t.classList.add('on');
       clearTimeout(toast._tm);
-      toast._tm = setTimeout(() => t.classList.remove('on'), 1400);
+      toast._tm = setTimeout(() => t.classList.remove('on'), 1500);
     }
 
     function speak(text) {
@@ -463,13 +613,14 @@
         u.rate = 0.95;
         const voices = window.speechSynthesis.getVoices();
         const v = voices.find(x => /zh(-|_)?HK|yue|cantonese/i.test(x.lang + x.name))
-          || voices.find(x => /zh|chinese|國語|普通話/i.test(x.lang + x.name));
+          || voices.find(x => /zh|chinese/i.test(x.lang + x.name));
         if (v) u.voice = v;
         window.speechSynthesis.speak(u);
       } catch (_) {}
     }
 
     function unlockAudio() {
+      ensureAudio();
       speak(' ');
     }
 
@@ -484,22 +635,16 @@
       });
     }
 
-    function loadLevel(idx) {
-      const L = LEVELS[idx];
-      state.levelIdx = idx;
-      state.len = L.len;
-      state.pos = L.start;
-      state.goal = L.goal;
-      state.facing = L.facing;
-      state.program = [];
-      state.running = false;
-      state.status = 'play';
-      setOverlays(null);
-      $('level-pill').textContent = '關 ' + L.id + '/' + LEVELS.length;
-      $('goal-pill').textContent = L.hint;
-      updateThemeSwitch();
-      renderAll();
-      setControlsEnabled(true);
+    function renderDots() {
+      const box = $('level-dots');
+      box.innerHTML = '';
+      LEVELS.forEach((_, i) => {
+        const d = document.createElement('span');
+        d.className = 'dot';
+        if (i < state.levelIdx) d.classList.add('done');
+        if (i === state.levelIdx) d.classList.add('now');
+        box.appendChild(d);
+      });
     }
 
     function updateThemeSwitch() {
@@ -507,32 +652,75 @@
       $('sw-mario').classList.toggle('on', state.theme === 'mario');
     }
 
-    function renderGrid() {
+    function showCoach(text) {
+      const c = $('coach');
+      if (!text) { c.classList.remove('on'); c.textContent = ''; return; }
+      c.textContent = text;
+      c.classList.add('on');
+    }
+
+    function loadLevel(idx, keepProgram) {
+      const L = LEVELS[idx];
+      state.levelIdx = idx;
+      state.len = L.len;
+      state.pos = L.start;
+      state.goal = L.goal;
+      state.facing = L.facing;
+      if (!keepProgram) state.program = [];
+      state.running = false;
+      state.status = 'play';
+      state.visited = [L.start];
+      state.failReason = '';
+      setOverlays(null);
+      $('level-pill').textContent = '關 ' + L.id + '/' + LEVELS.length;
+      $('goal-pill').textContent = L.hint;
+      updateThemeSwitch();
+      renderDots();
+      renderAll();
+      setControlsEnabled(true);
+
+      if (idx === 0 && !state.coachSeen) {
+        showCoach('① 撳「前」加入程式　② 撳「走」');
+      } else if (idx === 3) {
+        showCoach('呢關要用「後」▼');
+        setTimeout(() => showCoach(''), 2800);
+      } else {
+        showCoach('');
+      }
+    }
+
+    function renderGrid(hop) {
       const n = state.len;
       gridEl.style.gridTemplateColumns = 'repeat(' + n + ', 1fr)';
       gridEl.innerHTML = '';
       for (let i = 0; i < n; i++) {
         const cell = document.createElement('div');
-        cell.className = 'cell path';
+        cell.className = 'cell';
         cell.setAttribute('role', 'gridcell');
         if (i === LEVELS[state.levelIdx].start) cell.classList.add('start-glow');
         if (i === state.goal) cell.classList.add('goal-glow');
+        if (state.visited.indexOf(i) >= 0) cell.classList.add('visited');
         if (i === state.pos) cell.classList.add('here');
 
         if (i === state.goal && i !== state.pos) {
           cell.innerHTML = svgGoal(state.theme);
         }
         if (i === state.pos) {
-          const wrap = document.createElement('div');
-          wrap.style.width = '100%';
-          wrap.style.height = '100%';
-          wrap.style.display = 'flex';
-          wrap.style.alignItems = 'center';
-          wrap.style.justifyContent = 'center';
-          wrap.innerHTML = characterSVG(state.theme);
-          const sp = wrap.querySelector('.sprite');
-          if (sp) sp.classList.add('face-' + state.facing);
-          cell.appendChild(wrap);
+          const actor = document.createElement('div');
+          actor.className = 'actor' + (hop ? ' hop' : '');
+          actor.innerHTML = characterSVG(state.theme);
+          const arrow = document.createElement('div');
+          arrow.className = 'face-arrow f' + state.facing;
+          arrow.setAttribute('aria-hidden', 'true');
+          actor.appendChild(arrow);
+          // if standing on goal, small goal badge
+          if (i === state.goal) {
+            const badge = document.createElement('div');
+            badge.style.cssText = 'position:absolute;top:-6px;right:-4px;width:28%;height:28%';
+            badge.innerHTML = svgGoal(state.theme);
+            actor.appendChild(badge);
+          }
+          cell.appendChild(actor);
         }
         gridEl.appendChild(cell);
       }
@@ -544,30 +732,44 @@
         const slot = document.createElement('div');
         const cmd = state.program[i];
         slot.className = 'slot';
-        if (cmd === 'F') { slot.classList.add('filled-F'); slot.textContent = '前'; }
-        else if (cmd === 'B') { slot.classList.add('filled-B'); slot.textContent = '後'; }
-        else slot.textContent = '';
+        if (cmd === 'F') {
+          slot.classList.add('filled-F');
+          slot.innerHTML = '<span class="g">▲</span><span class="t">前</span>';
+        } else if (cmd === 'B') {
+          slot.classList.add('filled-B');
+          slot.innerHTML = '<span class="g">▼</span><span class="t">後</span>';
+        }
         if (execIdx === i) slot.classList.add('exec');
         programRow.appendChild(slot);
       }
       const tools = document.createElement('div');
       tools.className = 'mini-tools';
-      tools.innerHTML = '<button type="button" id="btn-undo" aria-label="刪一步">⌫</button><button type="button" id="btn-clear" aria-label="清空">清空</button>';
+      tools.innerHTML = '<button type="button" id="btn-undo" aria-label="刪一步">⌫</button>' +
+        '<button type="button" id="btn-clear" aria-label="清空">清空</button>';
       programRow.appendChild(tools);
       $('btn-undo').onclick = () => {
         if (state.running) return;
         state.program.pop();
+        SFX.tap();
         renderProgram();
+        updateStepCount();
       };
       $('btn-clear').onclick = () => {
         if (state.running) return;
         state.program = [];
+        SFX.tap();
         renderProgram();
+        updateStepCount();
       };
+      updateStepCount();
     }
 
-    function renderAll(execIdx) {
-      renderGrid();
+    function updateStepCount() {
+      $('step-count').textContent = state.program.length + ' / ' + MAX_STEPS + ' 步';
+    }
+
+    function renderAll(hop, execIdx) {
+      renderGrid(!!hop);
       renderProgram(execIdx);
     }
 
@@ -575,7 +777,7 @@
       $('btn-f').disabled = !on;
       $('btn-b').disabled = !on;
       $('btn-go').disabled = !on;
-      $('btn-go').classList.toggle('running', !on && state.running);
+      $('btn-go').classList.toggle('running', state.running);
     }
 
     function addCmd(cmd) {
@@ -583,22 +785,24 @@
       unlockAudio();
       if (state.program.length >= MAX_STEPS) {
         toast('最多 6 步');
+        SFX.fail();
         return;
       }
       state.program.push(cmd);
+      if (cmd === 'F') SFX.addF(); else SFX.addB();
       renderProgram();
       speak(cmd === 'F' ? '前' : '後');
+      if (state.levelIdx === 0) {
+        state.coachSeen = true;
+        showCoach(state.program.length ? '好！而家撳黃色「走」' : '');
+      }
     }
 
     function deltaFor(cmd, facing) {
-      // facing: 0N 1E 2S 3W — on 1D row we only use E/W effectively
-      const forward = facing === 1 ? 1 : facing === 3 ? -1 : facing === 0 ? 0 : 0;
-      // For 1D levels facing is always E(1). F = +1, B = -1 along axis when facing E
-      // General: move along facing for F, opposite for B
       const dir = (cmd === 'F') ? facing : (facing + 2) % 4;
       if (dir === 1) return 1;
       if (dir === 3) return -1;
-      return 0; // N/S unused on 1D
+      return 0;
     }
 
     function stepOnce(cmd) {
@@ -606,12 +810,20 @@
       const next = state.pos + d;
       if (next < 0 || next >= state.len) return 'fail';
       state.pos = next;
-      // 唔中途 win：要成段程式跑完，先睇係唔係企喺終點（教「唔好行多」）
+      if (state.visited.indexOf(next) < 0) state.visited.push(next);
       return 'ok';
     }
 
     function finalResult() {
       return state.pos === state.goal ? 'win' : 'miss';
+    }
+
+    function starCount() {
+      const min = LEVELS[state.levelIdx].min;
+      const n = state.program.length;
+      if (n <= min) return 3;
+      if (n <= min + 1) return 2;
+      return 1;
     }
 
     function sleep(ms) {
@@ -624,40 +836,62 @@
       if (state.program.length === 0) {
         toast('先撳「前」或「後」');
         speak('先揀方向');
+        SFX.fail();
         return;
       }
+      showCoach('');
       state.running = true;
+      state.coachSeen = true;
       setControlsEnabled(false);
-      // reset actor to start before run
+      SFX.go();
+
       const L = LEVELS[state.levelIdx];
       state.pos = L.start;
       state.facing = L.facing;
-      renderAll();
-      await sleep(280);
+      state.visited = [L.start];
+      renderAll(false);
+      await sleep(260);
 
       for (let i = 0; i < state.program.length; i++) {
         const cmd = state.program[i];
         renderProgram(i);
         speak(cmd === 'F' ? '前' : '後');
-        await sleep(320);
+        await sleep(280);
         const res = stepOnce(cmd);
-        renderGrid();
-        await sleep(480);
         if (res === 'fail') {
+          // mark edge cell shake
+          renderGrid(false);
+          const cells = gridEl.children;
+          const edge = state.pos;
+          if (cells[edge]) cells[edge].classList.add('boom');
+          SFX.fail();
           state.status = 'fail';
           state.running = false;
+          state.failReason = 'out';
+          $('fail-title').textContent = '行出界';
+          $('fail-msg').textContent = '步數太多，撞到邊邊啦';
+          await sleep(420);
           setOverlays('fail');
-          speak('撞到嘢，再試一次');
+          speak('行出界，再試一次');
           return;
         }
+        SFX.step();
+        renderAll(true, i);
+        await sleep(480);
       }
+
       if (finalResult() === 'win') {
         state.status = 'win';
         state.running = false;
+        state.stars = starCount();
         onWin();
       } else {
         state.status = 'fail';
         state.running = false;
+        state.failReason = 'miss';
+        $('fail-title').textContent = '未到終點';
+        $('fail-msg').textContent = '企唔喺月餅度，改下程式再試';
+        SFX.fail();
         setOverlays('fail');
         speak('未到終點，再試一次');
       }
@@ -665,42 +899,47 @@
 
     function onWin() {
       const t = THEMES[state.theme];
-      $('win-title').textContent = '成功！';
+      const s = state.stars;
+      $('win-stars').textContent = '★'.repeat(s) + '☆'.repeat(3 - s);
+      $('win-title').textContent = s === 3 ? '完美！' : '成功！';
       $('win-msg').textContent = t.win;
       const isLast = state.levelIdx >= LEVELS.length - 1;
       $('btn-next').textContent = isLast ? '完成' : '下一關';
       setOverlays(isLast ? 'done' : 'win');
+      SFX.win();
       if (isLast) speak('中秋完成');
       else speak('成功');
-      try { confettiBurst(); } catch (_) {}
+      confettiBurst();
     }
 
     function confettiBurst() {
       const wrap = $('board-wrap');
-      for (let i = 0; i < 18; i++) {
+      for (let i = 0; i < 22; i++) {
         const p = document.createElement('div');
-        p.style.cssText = 'position:absolute;width:10px;height:10px;border-radius:2px;pointer-events:none;z-index:5;left:50%;top:40%;';
-        p.style.background = ['#ffd76a','#ff6b6b','#6ecbff','#3ddc97','#fff'][i % 5];
+        p.style.cssText = 'position:absolute;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:6;left:50%;top:42%;';
+        p.style.background = ['#ffd76a','#ff6b6b','#6ecbff','#3ddc97','#fff','#ff8fab'][i % 6];
         wrap.appendChild(p);
-        const ang = (Math.PI * 2 * i) / 18;
-        const dist = 60 + Math.random() * 80;
+        const ang = (Math.PI * 2 * i) / 22 + Math.random() * 0.2;
+        const dist = 70 + Math.random() * 90;
         p.animate([
           { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
-          { transform: 'translate(calc(-50% + ' + Math.cos(ang)*dist + 'px), calc(-50% + ' + Math.sin(ang)*dist + 'px)) scale(0)', opacity: 0 }
-        ], { duration: 900, easing: 'ease-out' }).onfinish = () => p.remove();
+          { transform: 'translate(calc(-50% + ' + (Math.cos(ang) * dist) + 'px), calc(-50% + ' + (Math.sin(ang) * dist) + 'px)) scale(0.2)', opacity: 0 }
+        ], { duration: 900 + Math.random() * 300, easing: 'ease-out' }).onfinish = () => p.remove();
       }
     }
 
     function startTheme(theme) {
       unlockAudio();
       state.theme = theme;
-      try { localStorage.setItem('midautumn_dir_theme', theme); } catch (_) {}
+      state.coachSeen = false;
+      try { localStorage.setItem('madc_theme', theme); } catch (_) {}
       showScreen('play');
-      loadLevel(0);
+      loadLevel(0, false);
+      SFX.tap();
       speak(THEMES[theme].name + '，開始');
     }
 
-    // events
+    /* events */
     document.querySelectorAll('.theme-card').forEach(btn => {
       btn.addEventListener('click', () => startTheme(btn.getAttribute('data-theme')));
     });
@@ -712,6 +951,7 @@
       showScreen('home');
       setOverlays(null);
       $('teacher-panel').classList.remove('on');
+      showCoach('');
     };
     $('btn-win-home').onclick = () => $('btn-home').click();
     $('btn-done-home').onclick = () => $('btn-home').click();
@@ -720,15 +960,28 @@
         setOverlays('done');
         return;
       }
-      loadLevel(state.levelIdx + 1);
+      loadLevel(state.levelIdx + 1, false);
+      SFX.tap();
       speak('下一關');
     };
-    $('btn-again').onclick = () => loadLevel(0);
-    $('btn-retry').onclick = () => loadLevel(state.levelIdx);
+    $('btn-again').onclick = () => { state.coachSeen = false; loadLevel(0, false); };
+    // 再試：保留程式，只重設位置
+    $('btn-retry').onclick = () => {
+      setOverlays(null);
+      loadLevel(state.levelIdx, true);
+      SFX.tap();
+      speak('再試');
+    };
+    $('btn-fail-clear').onclick = () => {
+      setOverlays(null);
+      loadLevel(state.levelIdx, false);
+      SFX.tap();
+    };
     $('btn-speak').onclick = () => {
       unlockAudio();
       const L = LEVELS[state.levelIdx];
       speak(THEMES[state.theme].name + '。' + L.hint + '。終點係' + THEMES[state.theme].goalName);
+      SFX.tap();
     };
     $('sw-neko').onclick = () => {
       if (state.running) return;
@@ -736,6 +989,7 @@
       updateThemeSwitch();
       renderAll();
       toast('哆啦A夢 · 中秋');
+      SFX.tap();
     };
     $('sw-mario').onclick = () => {
       if (state.running) return;
@@ -743,9 +997,9 @@
       updateThemeSwitch();
       renderAll();
       toast('瑪利歐 · 中秋');
+      SFX.tap();
     };
 
-    // teacher
     const tLevel = $('t-level');
     LEVELS.forEach((L, i) => {
       const o = document.createElement('option');
@@ -757,34 +1011,25 @@
       $('teacher-panel').classList.toggle('on');
       tLevel.value = String(state.levelIdx);
       $('t-voice').value = state.voice ? '1' : '0';
+      $('t-sfx').value = state.sfx ? '1' : '0';
     };
     $('t-close').onclick = () => $('teacher-panel').classList.remove('on');
-    tLevel.onchange = () => {
-      loadLevel(parseInt(tLevel.value, 10) || 0);
-    };
-    $('t-voice').onchange = () => {
-      state.voice = $('t-voice').value === '1';
-    };
-    $('t-reset').onclick = () => loadLevel(state.levelIdx);
+    tLevel.onchange = () => loadLevel(parseInt(tLevel.value, 10) || 0, false);
+    $('t-voice').onchange = () => { state.voice = $('t-voice').value === '1'; };
+    $('t-sfx').onchange = () => { state.sfx = $('t-sfx').value === '1'; };
+    $('t-reset').onclick = () => loadLevel(state.levelIdx, false);
 
-    // restore theme pref on home only
     try {
-      const th = localStorage.getItem('midautumn_dir_theme');
+      const th = localStorage.getItem('madc_theme');
       if (th === 'neko' || th === 'mario') state.theme = th;
     } catch (_) {}
 
-    // voiceschanged
     if (window.speechSynthesis) {
       window.speechSynthesis.onvoiceschanged = function () {};
     }
 
-    // Expose for tests
     window.DirCoding = {
-      LEVELS, state, stepOnce, deltaFor, loadLevel, addCmd, characterSVG,
-      runResetPos() {
-        const L = LEVELS[state.levelIdx];
-        state.pos = L.start; state.facing = L.facing;
-      },
+      LEVELS, state, stepOnce, deltaFor, loadLevel, addCmd, characterSVG, finalResult, starCount,
       simulate(cmds) {
         const L = LEVELS[state.levelIdx];
         state.pos = L.start; state.facing = L.facing; state.status = 'play';
@@ -794,7 +1039,6 @@
         }
         return finalResult();
       },
-      finalResult,
     };
   })();
   </script>

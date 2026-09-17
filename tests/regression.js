@@ -32,7 +32,10 @@ ok('S6 LEVELS 6', (html.match(/id: [1-6]/g) || []).length >= 6);
 ok('S7 original SVG not external mario art', !/nintendo|official.*mario|doraemon\.com/i.test(html));
 ok('S8 touch manipulation', /touch-action:\s*manipulation/.test(html));
 ok('S9 teacher panel', /id="teacher-panel"/.test(html));
-ok('S10 DirCoding export', /window\.DirCoding/.test(html));
+ok('S12 sfx beep helpers', /function beep\(/.test(html) && /SFX/.test(html));
+ok('S13 starCount', /function starCount\(/.test(html));
+ok('S14 coach', /id="coach"/.test(html));
+ok('S15 keep program retry', /loadLevel\(state\.levelIdx, true\)/.test(html));
 
 // Extract script and run simulate logic in vm
 const m = html.match(/<script>([\s\S]*?)<\/script>/);
